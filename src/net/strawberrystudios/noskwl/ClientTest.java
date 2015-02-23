@@ -98,7 +98,7 @@ public class ClientTest {
         }
 //        System.out.println(command);
         switch (command) {
-            case Packet.SERVER_BROADCAST:
+            case Packet.SERVER_INFO:
                 data = "Server Infomation: " + data;
             case Packet.MESSAGE:
                 showMessage(data);

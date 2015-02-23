@@ -8,6 +8,8 @@ package net.strawberrystudios.noskwl.common;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
+import static java.lang.System.out;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +30,7 @@ public class ClientWorker implements Runnable {
     private ObjectInputStream input;
     private final Socket sock;
     private String clientUsername;
-    private PacketFactory pf = new PacketFactory();
+    private final PacketFactory pf = new PacketFactory();
     private String userID;
 
     public ClientWorker(Socket socket) throws IOException {
@@ -51,6 +53,7 @@ public class ClientWorker implements Runnable {
     }
     public void setClientID(String clientID) {
         this.userID = clientID;
+        pf.setAddress(userID);
     }
 
     //setup IO streams
@@ -61,9 +64,9 @@ public class ClientWorker implements Runnable {
 
     }
 
-    private synchronized void pushToServer(String message) {
+    private synchronized void pushToServer(Packet packet)  {
 
-        Server.sendToClients(message);
+        Server.parsePacket(packet);
         
     }
 
@@ -77,40 +80,44 @@ public class ClientWorker implements Runnable {
 
     @Override
     public void run() {
-        String packet = "";
+        Object rawPacket[] = null;
         do {
             try {
-                if (clientUsername == null) {
-                    setupAuth();
+                Object p = input.readObject();
+                if (p instanceof Object[]) {
+                    rawPacket = (Object[]) p;
+                } else if (p instanceof String) {
+                    showMessage("Got a string packet lolwut?");
                 }
-                Object in = input.readObject();
-                if (in instanceof String) {
-                    packet = (String) in;
-                }
-                System.out.println(packet);
-                parsePacket(packet);
+                this.parsePacket(new ObjectPacket(rawPacket));
 
             } catch (ClassNotFoundException | IOException c) {
                 break;
             }
-        } while (!packet.equals("CLI-END"));
+        } while (true);
         System.out.println("Client exited with name :" + this.clientUsername);
 
         this.shutdown();
 
     }
 
-    private void parsePacket(String packet) {
+    private void parsePacket(Packet packet) throws UnsupportedEncodingException {
         
-        String command = packet.substring(0, packet.indexOf('-'));
-        String data = packet.substring(packet.indexOf('-')+1);
-        System.out.println(command);
+        if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
+            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID");
+            out.println("UID OUT OF SYNC");
+            this.sendPacketToClient(Packet.UID, userID);
+        }
+        out.println("UID  IN SYNC");
+        int command = packet.getIns();
+        byte data[] = packet.getData();
+        System.out.println("From "+this.userID+command);
         switch (command) {
-            case "MSG":
-                pushToServer(data);
+            case Packet.MESSAGE:
+                pushToServer(packet);
                 break;
-            case "NAME":
-                clientUsername = data;
+            case Packet.SET_USERNAME:
+                clientUsername = new String(data, Packet.CHARSET);
                 Server.setClientUsername(this, clientUsername);
                 break;
             default:
@@ -120,16 +127,16 @@ public class ClientWorker implements Runnable {
     }
 
     public void sendMessageToClient(String message) {
-        this.sendPacketToClient("MSG", message);
+        this.sendPacketToClient(Packet.MESSAGE, message);
     }
     
     public void sendSystemMessageToClient(String message) {
-        this.sendPacketToClient("SERV", message);
+        this.sendPacketToClient(Packet.SERVER_INFO, message);
     }
     
-    public void sendPacketToClient(String ins, String message) {
+    public void sendPacketToClient(int ins, String message) {
         try {
-            output.writeObject(pf.getRawPacket("", Packet.MESSAGE, message.getBytes()));
+            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, message.getBytes()));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -150,5 +157,9 @@ public class ClientWorker implements Runnable {
     void setUsername(String defaultUsername) {
         this.clientUsername = defaultUsername;
         sendSystemMessageToClient("Your username is now: "+defaultUsername);
+    }
+
+    private void showMessage(String str) {
+       System.out.println(str);
     }
 }

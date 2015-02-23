@@ -25,12 +25,10 @@ import java.util.logging.Logger;
 
 public class Server extends Thread implements Runnable {
 
-    
-    
     public static final String VERSION = "0.1";
-    public static final String BUILD = 
-            ResourceBundle.getBundle("version").getString("BUILD");
-    
+    public static final String BUILD
+            = ResourceBundle.getBundle("version").getString("BUILD");
+
     private static Stack messageStack;
     /*
      * TODO:
@@ -45,8 +43,6 @@ public class Server extends Thread implements Runnable {
     private static final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap();
 //    private static final List<ClientWorker> clientList = new ArrayList();
 
-    
-
     public static synchronized void removeClient(String userID) {
         clientMap.remove(userID);
     }
@@ -55,16 +51,27 @@ public class Server extends Thread implements Runnable {
         clientMap.put(userID, cw);
     }
 
-    //sends message to clients
-    public static synchronized void sendToClients(String message) {
-        for (ClientWorker cw : clientMap.values()) {
-            cw.sendMessageToClient(message);
+    /**
+     * Parse a packet received from a client worker
+     *
+     * @param packet
+     */
+    public static synchronized void parsePacket(Packet packet) {
+        System.out.println("SERVER GOT MESSAGE PUSH: "+packet.getIns());
+        switch (packet.getIns()) {
+            case Packet.MESSAGE:
+                for (ClientWorker cw : clientMap.values()) {
+                    try {
+                        cw.sendMessageToClient(new String(packet.getData(), Packet.CHARSET));
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                break;
         }
-        // push to all ClientWorkers
+
     }
 
-   
-    
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private ServerSocket sockServ;
@@ -92,24 +99,29 @@ public class Server extends Thread implements Runnable {
     //set up and run server
     @Override
     public void run() {
-        System.out.println("NoSkwl Server version"+ Server.VERSION +" Build " + Server.BUILD);
-        while (true) {
-            try {
-                sockServ = new ServerSocket(port, 100);
-                sockServ.setSoTimeout(5000);
-                while (true) {
-                    try {
-                        waitForConnection();
-                    } catch (EOFException eofException) {
-                        System.out.println("\n Sever ended the connection"); // look at jamie's spelling
+        try {
+            System.out.println("NoSkwl Server version " + Server.VERSION + "." + Server.BUILD);
+            sockServ = new ServerSocket(port, 100);
+            sockServ.setSoTimeout(5000);
+            while (true) {
+                try {
+
+                    while (true) {
+                        try {
+                            waitForConnection();
+                        } catch (EOFException eofException) {
+                            System.out.println("\n Sever ended the connection"); // look at jamie's spelling
+                        }
                     }
+                } catch (IOException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+
+                } finally {
+
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-
-            } finally {
-
             }
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -144,8 +156,6 @@ public class Server extends Thread implements Runnable {
 
     }
 
-    
-
     private void announce(String message) {
         for (ClientWorker cw : clientMap.values()) {
             cw.sendSystemMessageToClient(message);
@@ -153,6 +163,5 @@ public class Server extends Thread implements Runnable {
         // push to all clients, notifying them that it is an info message
 
     }
-
 
 }

@@ -11,11 +11,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import static java.lang.System.out;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.NoSkwl;
+import net.strawberrystudios.noskwl.NoSkwlServer;
 
 /**
  *
@@ -35,7 +40,9 @@ public class Client implements Runnable {
     private final Writer textOut;
     private final PacketFactory pf = new PacketFactory();
 
+    private final Queue packetQueue;
     public Client(Writer writer) {
+        this.packetQueue = new ConcurrentLinkedQueue();
         textOut = writer;
     }
 
@@ -45,6 +52,7 @@ public class Client implements Runnable {
 
     public void setUsername(String username) {
         this.username = username;
+        this.sendPacket(pf.getRawPacket(Packet.SET_USERNAME, username.getBytes()));
     }
 
     @Override
@@ -52,7 +60,7 @@ public class Client implements Runnable {
         try {
             connectToServer();
             setupStreams();
-            whileChatting();
+            clientLoop();
         } catch (EOFException e) {
             showMessage("\nConection ended.");
         } catch (IOException ex) {
@@ -73,7 +81,7 @@ public class Client implements Runnable {
         showMessage("Connecting to server...\n");
         connection = new Socket(InetAddress.getByName(remoteIP), remotePort);
         showMessage("Connected to: " + connection.getInetAddress().getHostName());
-
+        
     }
 
     //setup IO streams
@@ -81,21 +89,32 @@ public class Client implements Runnable {
         output = new ObjectOutputStream(connection.getOutputStream());
         output.flush();
         input = new ObjectInputStream(connection.getInputStream());
-        showMessage("\nStreams initialized\n");
+        showMessage("Streams initialized");
+        synchronized(this){
+            this.notifyAll();
+        }
     }
 
-    private void whileChatting() throws IOException {
+    private void clientLoop() throws IOException {
+//        this.connection.setSoTimeout(1000);
         do {
             try {
                 if(this.uid == null){
                     getUserID();
                 }
-                Object p = input.readObject();
+                Object p = null;
+                try{
+                     p = input.readObject();
+                } catch(SocketTimeoutException ex){
+                    continue;
+                }
                 Object packet[] = null;
                 if (p instanceof Object[]) {
+//                    out.println(this.uid+":I GOTTA PACKET!");
                     packet = (Object[]) p;
                 } else if (p instanceof String) {
                     System.out.println("GOT STRING PACKET WTF: " + (String) p + "FROM CLIENT UID" + this.getUsername());
+                    return;
                 }
                 parseMessage(new ObjectPacket(packet));
             } catch (ClassNotFoundException e) {
@@ -104,6 +123,28 @@ public class Client implements Runnable {
         } while (true);
     }
 
+     private String parseMessage(Packet packet) throws UnsupportedEncodingException {
+//        System.out.println("GOT COMMAND : "+packet.getIns());
+        if(this.uid == null){
+            this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT
+        }
+        int command = packet.getIns();
+        byte data[] = packet.getData();
+        switch (command) {
+            case Packet.MESSAGE:
+                showMessage(new String(data, "UTF-8"));
+                break;
+            case Packet.UID:
+                this.uid =  new String(data, "UTF-8");
+                System.out.println("UID SET!");
+                break;
+            case Packet.SERVER_INFO:
+                showMessage("System infomation: "+new String(data, "UTF-8"));
+                break;
+        }
+        return null;
+    }
+    
     //close streams and sockets
     private void closeCrap() {
         showMessage("\nDisconnecting...");
@@ -118,44 +159,35 @@ public class Client implements Runnable {
 
     private void showMessage(final String s) {
         try {
-            textOut.append(s);
+            textOut.append("CLI:"+s+"\n");
+            textOut.flush();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private String parseMessage(Packet packet) throws UnsupportedEncodingException {
-        int command = packet.getIns();
-        byte data[] = packet.getData();
-        switch (command) {
-            case Packet.MESSAGE:
-                showMessage(new String(data, "UTF-8"));
-                break;
-            case Packet.UID:
-                this.uid =  new String(data, "UTF-8");
-        }
-        return null;
-    }
+   
 
     //send messages to server
-    public void sendMessageToAll(String message) {
-
+    public synchronized void sendMessageToAll(String message) {
         this.sendPacket(pf.getRawPacket("", Packet.MESSAGE, message.getBytes()));
 
     }
 
-    public void sendPacket(Object p) {
+     
+    public synchronized void sendPacket(Object p) {
         try {
             output.writeObject(p);
             output.flush();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NullPointerException npe) {
+        } catch (NullPointerException ex) {
+            Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
             showMessage("Send packet failure, connection probably lost");
         }
     }
 
-    private void getUserID() {
+    private synchronized void getUserID() {
         this.sendPacket(pf.getRawPacket("", Packet.GET_UID, null));
         
     }
