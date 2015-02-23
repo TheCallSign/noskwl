@@ -14,6 +14,8 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import net.thecallsign.common.Stack;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +27,6 @@ public class Server extends Thread implements Runnable {
 
     public static String VERSION = "0.1.1";
 
-            
     private static Stack messageStack;
     /*
      * TODO:
@@ -39,6 +40,9 @@ public class Server extends Thread implements Runnable {
     private static final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap();
 //    private static final List<ClientWorker> clientList = new ArrayList();
 
+    final static ResourceBundle rb
+            = ResourceBundle.getBundle("version.properties");
+
     public static synchronized void removeClient(String userID) {
         clientMap.remove(userID);
     }
@@ -46,8 +50,6 @@ public class Server extends Thread implements Runnable {
     public static synchronized void setClientUsername(ClientWorker cw, String userID) {
         clientMap.put(userID, cw);
     }
-
-   
 
     //sends message to clients
     public static synchronized void sendToClients(String message) {
@@ -57,6 +59,15 @@ public class Server extends Thread implements Runnable {
         // push to all ClientWorkers
     }
 
+    public static String getBuildNumber() {
+        String msg = "";
+        try {
+            msg = rb.getString("BUILD");
+        } catch (MissingResourceException e) {
+        }
+        return msg;
+    }
+    
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private ServerSocket sockServ;
@@ -136,6 +147,8 @@ public class Server extends Thread implements Runnable {
 
     }
 
+    
+
     private void announce(String message) {
         for (ClientWorker cw : clientMap.values()) {
             cw.sendSystemMessageToClient(message);
@@ -143,5 +156,6 @@ public class Server extends Thread implements Runnable {
         // push to all clients, notifying them that it is an info message
 
     }
+
 
 }
