@@ -101,10 +101,7 @@ public class ClientWorker implements Runnable {
     }
 
     private void parsePacket(String packet) {
-        if(!packet.contains("-")){
-            System.out.println("Strange packet recived from UID" + this.userID);
-            return;
-        }
+        
         String command = packet.substring(0, packet.indexOf('-'));
         String data = packet.substring(packet.indexOf('-')+1);
         System.out.println(command);

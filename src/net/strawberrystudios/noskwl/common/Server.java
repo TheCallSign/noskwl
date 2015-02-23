@@ -25,8 +25,12 @@ import java.util.logging.Logger;
 
 public class Server extends Thread implements Runnable {
 
-    public static String VERSION = "0.1.1";
-
+    
+    
+    public static final String VERSION = "0.1";
+    public static final String BUILD = 
+            ResourceBundle.getBundle("version").getString("BUILD");
+    
     private static Stack messageStack;
     /*
      * TODO:
@@ -37,11 +41,11 @@ public class Server extends Thread implements Runnable {
      */
     //  <HashMap of ClientWorker thread and the Client's username
     private static final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap();
+    // User set (custom) nickname, UserID (constant - connection unique)
     private static final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap();
 //    private static final List<ClientWorker> clientList = new ArrayList();
 
-    final static ResourceBundle rb
-            = ResourceBundle.getBundle("version.properties");
+    
 
     public static synchronized void removeClient(String userID) {
         clientMap.remove(userID);
@@ -59,14 +63,7 @@ public class Server extends Thread implements Runnable {
         // push to all ClientWorkers
     }
 
-    public static String getBuildNumber() {
-        String msg = "";
-        try {
-            msg = rb.getString("BUILD");
-        } catch (MissingResourceException e) {
-        }
-        return msg;
-    }
+   
     
     private ObjectOutputStream output;
     private ObjectInputStream input;
@@ -95,7 +92,7 @@ public class Server extends Thread implements Runnable {
     //set up and run server
     @Override
     public void run() {
-        System.out.println("Server starting...");
+        System.out.println("NoSkwl Server version"+ Server.VERSION +" Build " + Server.BUILD);
         while (true) {
             try {
                 sockServ = new ServerSocket(port, 100);

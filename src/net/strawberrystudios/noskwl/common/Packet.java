@@ -23,6 +23,9 @@ public abstract class Packet {
     // Request the server the set the username as specified
     public static final int SET_USERNAME = 110;
     
+    public static final int GET_UID = 115;
+    public static final int UID = 15;
+    
     // Get list of the users connected
     public static final int GET_USERLIST = 120;
     // DATA is the list of visble users connected
@@ -41,6 +44,8 @@ public abstract class Packet {
     
     /*END RESERVED CONSTANTS*/
     
+    /*Default encoding for all strings*/
+    public static final String CHARSET = "UTF-8";
     
     private final Object rawPacket;
     

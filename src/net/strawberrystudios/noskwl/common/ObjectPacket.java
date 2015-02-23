@@ -43,7 +43,7 @@ public class ObjectPacket extends Packet {
 
     @Override
     public byte[] getData() {
-        return (byte[]) packetArray[1];
+        return (byte[]) packetArray[2];
     }
     
     

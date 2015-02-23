@@ -17,7 +17,7 @@ public class PacketFactory {
     }    
 
 
-    public Object getRawPacket(String addr, int ins, byte[] data) {
+    public Object getRawPacket(String addr, int ins, byte[] data) { 
         Object packetArray[] = new Object[3];
         packetArray[0] = addr;
         packetArray[1] = ins;

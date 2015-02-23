@@ -9,6 +9,8 @@ import net.strawberrystudios.noskwl.common.Client;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import net.strawberrystudios.noskwl.common.Server;
 
 /**
@@ -20,13 +22,19 @@ public class NoSkwlServer {
         int port = 7862;
         Server s = new Server(port);
         s.start();
-        Client c = new Client(new PrintWriter(System.out));
-        c.setServer("127.0.0.1", port);
-        Thread t = new Thread(c);
-        t.start();
-        while(t.isAlive()){
-            c.sendMessageToAll("Hello!!");
-            Thread.sleep(1000);
+        List<Client> clients = new ArrayList<>();
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Client c = new Client(new PrintWriter(System.out));
+            c.setServer("127.0.0.1", port);
+            clients.add(c);
+            threads.add(new Thread(c));
+        }
+        for(Thread t : threads){
+            t.start();
+        }
+        for(Client c : clients){
+            c.sendMessageToAll("Hello from Client " + c.getUsername());
         }
     }
 }

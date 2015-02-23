@@ -24,17 +24,17 @@ import net.strawberrystudios.noskwl.NoSkwl;
 public class Client implements Runnable {
 
     public static final String VERSION = "0.1.3";
-    
+
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private String remoteIP;
     private int remotePort;
     private Socket connection;
     private String username;
-    
+    private String uid;
     private final Writer textOut;
     private final PacketFactory pf = new PacketFactory();
-    
+
     public Client(Writer writer) {
         textOut = writer;
     }
@@ -47,8 +47,6 @@ public class Client implements Runnable {
         this.username = username;
     }
 
-    
-    
     @Override
     public void run() {
         try {
@@ -64,15 +62,14 @@ public class Client implements Runnable {
         }
     }
 
-    public void setServer(String ip, int port){
+    public void setServer(String ip, int port) {
         remoteIP = ip;
         remotePort = port;
     }
-    
-    //conect to server
 
+    //conect to server
     private void connectToServer() throws IOException {
-        
+
         showMessage("Connecting to server...\n");
         connection = new Socket(InetAddress.getByName(remoteIP), remotePort);
         showMessage("Connected to: " + connection.getInetAddress().getHostName());
@@ -90,16 +87,24 @@ public class Client implements Runnable {
     private void whileChatting() throws IOException {
         do {
             try {
-                Object packet = (String) input.readObject();
-                parseMessage(new ObjectPacket(packet)); 
+                if(this.uid == null){
+                    getUserID();
+                }
+                Object p = input.readObject();
+                Object packet[] = null;
+                if (p instanceof Object[]) {
+                    packet = (Object[]) p;
+                } else if (p instanceof String) {
+                    System.out.println("GOT STRING PACKET WTF: " + (String) p + "FROM CLIENT UID" + this.getUsername());
+                }
+                parseMessage(new ObjectPacket(packet));
             } catch (ClassNotFoundException e) {
                 showMessage("Invalid message.");
             }
         } while (true);
     }
-    
-    //close streams and sockets
 
+    //close streams and sockets
     private void closeCrap() {
         showMessage("\nDisconnecting...");
         try {
@@ -110,43 +115,49 @@ public class Client implements Runnable {
         } catch (IOException e) {
         }
     }
-    
-     private void showMessage(final String s) {
+
+    private void showMessage(final String s) {
         try {
             textOut.append(s);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-     
-     private String parseMessage(Packet packet) throws UnsupportedEncodingException{
+
+    private String parseMessage(Packet packet) throws UnsupportedEncodingException {
         int command = packet.getIns();
         byte data[] = packet.getData();
-        switch(command){
+        switch (command) {
             case Packet.MESSAGE:
                 showMessage(new String(data, "UTF-8"));
+                break;
+            case Packet.UID:
+                this.uid =  new String(data, "UTF-8");
         }
         return null;
     }
-     
-     //send messages to server
-    public void sendMessageToAll(String message){
-        try{
-            output.writeObject(pf.getRawPacket("", Packet.MESSAGE, message.getBytes()));
-            output.flush();
-        }catch(IOException e){
-            showMessage("\nUnexpected failure.");
-        }
+
+    //send messages to server
+    public void sendMessageToAll(String message) {
+
+        this.sendPacket(pf.getRawPacket("", Packet.MESSAGE, message.getBytes()));
+
     }
-    
-    public void sendPacket(Object p){
+
+    public void sendPacket(Object p) {
         try {
             output.writeObject(p);
             output.flush();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException npe) {
+            showMessage("Send packet failure, connection probably lost");
         }
     }
-    
-    
+
+    private void getUserID() {
+        this.sendPacket(pf.getRawPacket("", Packet.GET_UID, null));
+        
+    }
+
 }
