@@ -23,7 +23,7 @@ public class PacketFactory {
 
     public Object getRawPacket(String addr, int ins, byte[] data) { 
         Object packetArray[] = new Object[3];
-        packetArray[0] = this.address+":"+addr;
+        packetArray[0] = addr;
         packetArray[1] = ins;
         packetArray[2] = data;
         return (Object) packetArray;
@@ -31,7 +31,7 @@ public class PacketFactory {
     
     public Object getRawPacket(int ins, byte[] data) { 
         Object packetArray[] = new Object[3];
-        packetArray[0] = this.address+":";
+        packetArray[0] = ":";
         packetArray[1] = ins;
         packetArray[2] = data;
         return (Object) packetArray;

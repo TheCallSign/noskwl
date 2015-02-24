@@ -39,7 +39,7 @@ public class Server extends Thread implements Runnable {
      */
     //  <HashMap of ClientWorker thread and the Client's username
     private static final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap();
-    // User set (custom) nickname, UserID (constant - connection unique)
+    // (constant - connection unique) [UserID], [nickname]  User set (custom)
     private static final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap();
 //    private static final List<ClientWorker> clientList = new ArrayList();
 
@@ -132,6 +132,7 @@ public class Server extends Thread implements Runnable {
         try {
             clientSock = sockServ.accept();
         } catch (SocketTimeoutException e) {
+            doMaintanance();
             announce("Hello mah preps!");
             return;
         }
@@ -158,10 +159,20 @@ public class Server extends Thread implements Runnable {
 
     private void announce(String message) {
         for (ClientWorker cw : clientMap.values()) {
-            cw.sendSystemMessageToClient(message);
+            cw.sendMessageToClient(message);
         }
         // push to all clients, notifying them that it is an info message
 
+    }
+
+    private void doMaintanance() {
+        if(nicknameMap.values().contains("")){
+            for(String uid : nicknameMap.keySet()){
+                if(((String) nicknameMap.get(uid)).equals("")){
+                    nicknameMap.put(uid, clientMap.get(uid).getNickname());
+                }
+            }
+        }
     }
 
 }

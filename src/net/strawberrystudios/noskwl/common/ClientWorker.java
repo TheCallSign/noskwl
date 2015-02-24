@@ -40,7 +40,7 @@ public class ClientWorker implements Runnable {
 //        send
     }
 
-    public String getClientUsername() {
+    public String getNickname() {
         return clientUsername;
     }
 
@@ -102,7 +102,7 @@ public class ClientWorker implements Runnable {
     }
 
     private void parsePacket(Packet packet) throws UnsupportedEncodingException {
-        
+        out.println("here");
         if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
             this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID");
             out.println("UID OUT OF SYNC");

@@ -71,6 +71,6 @@ public abstract class Packet {
     
     @Override
     public String toString(){
-        return "["+this.getAddress()+"]["+this.getIns()+"]["+Arrays.toString(this.getData())+"]";
+        return "["+this.getAddress()+"]["+this.getIns()+"]["+new String(this.getData())+"]";
     }
 }

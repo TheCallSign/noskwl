@@ -160,7 +160,7 @@ public class Client implements Runnable {
 
     private void showMessage(final String s) {
         try {
-            textOut.append("CLI:"+s+"\n");
+//            textOut.append("CLI:"+s+"\n");
             textOut.flush();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
