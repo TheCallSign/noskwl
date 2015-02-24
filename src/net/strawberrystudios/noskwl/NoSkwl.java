@@ -15,7 +15,7 @@ import java.io.Writer;
 import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import net.thecallsign.common.CopyrightNotice;
+import net.thecallsign.common.Common;
 
 /**
  *

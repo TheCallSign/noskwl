@@ -5,6 +5,8 @@
  */
 package net.strawberrystudios.noskwl.common;
 
+import java.util.Arrays;
+
 /**
  * Client messages are prefixed with a '1' (For messages in response to a
  * server) and visa versa
@@ -65,5 +67,10 @@ public abstract class Packet {
 
     public Object getRawPacket() {
         return rawPacket;
+    }
+    
+    @Override
+    public String toString(){
+        return "["+this.getAddress()+"]["+this.getIns()+"]["+Arrays.toString(this.getData())+"]";
     }
 }

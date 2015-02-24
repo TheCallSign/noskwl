@@ -127,7 +127,8 @@ public class Client implements Runnable {
 //        System.out.println("GOT COMMAND : "+packet.getIns());
         if(this.uid == null){
             this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT
-        }
+            
+        }out.println(packet.toString());
         int command = packet.getIns();
         byte data[] = packet.getData();
         switch (command) {

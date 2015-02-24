@@ -5,6 +5,8 @@
  */
 package net.strawberrystudios.noskwl.common;
 
+import java.util.Arrays;
+
 /**s
  *
  * @author St John Giddy @ Strawberry Studios (2015)
@@ -45,6 +47,7 @@ public class ObjectPacket extends Packet {
     public byte[] getData() {
         return (byte[]) packetArray[2];
     }
+    
     
     
 }
