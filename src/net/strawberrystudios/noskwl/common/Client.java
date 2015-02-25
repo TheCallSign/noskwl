@@ -128,7 +128,7 @@ public class Client implements Runnable {
         if(this.uid == null){
             this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT
             
-        }out.println(packet.toString());
+        }out.println("CLI:"+packet.toString());
         int command = packet.getIns();
         byte data[] = packet.getData();
         switch (command) {
@@ -137,7 +137,7 @@ public class Client implements Runnable {
                 break;
             case Packet.UID:
                 this.uid =  new String(data, "UTF-8");
-                System.out.println("UID SET!");
+                System.out.println("CLI: UID SET!");
                 break;
             case Packet.SERVER_INFO:
                 showMessage("System infomation: "+new String(data, "UTF-8"));

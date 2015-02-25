@@ -65,7 +65,7 @@ public class ClientWorker implements Runnable {
     }
 
     private synchronized void pushToServer(Packet packet)  {
-
+        out.println("pushToServer();");
         Server.parsePacket(packet);
         
     }
@@ -105,6 +105,7 @@ public class ClientWorker implements Runnable {
         out.println("here");
         if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
             this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID");
+            this.sendPacketToClient(Packet.UID, userID+"");
             out.println("UID OUT OF SYNC");
             this.sendPacketToClient(Packet.UID, userID);
         }
@@ -112,9 +113,9 @@ public class ClientWorker implements Runnable {
         int command = packet.getIns();
         byte data[] = packet.getData();
         System.out.println("From "+this.userID+command);
+        pushToServer(packet);
         switch (command) {
             case Packet.MESSAGE:
-                pushToServer(packet);
                 break;
             case Packet.SET_USERNAME:
                 clientUsername = new String(data, Packet.CHARSET);
@@ -136,7 +137,7 @@ public class ClientWorker implements Runnable {
     
     public void sendPacketToClient(int ins, String message) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, message.getBytes()));
+            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, (""+message).getBytes()));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
