@@ -34,6 +34,7 @@ public class NoSkwl extends javax.swing.JFrame {
     private Server server;
     private Client client;
     private Thread clientThread;
+    private Thread serverThread;
     
     /**
      * Creates new form SchoolHelp
@@ -327,8 +328,9 @@ public class NoSkwl extends javax.swing.JFrame {
 
     private void startServer(int port) {
 
-        server = new Server(port);
-        server.start();
+        server = new Server(port); 
+        serverThread = new Thread(server);
+        serverThread.start();
         remoteIP = "127.0.0.1";
         remotePort = port;
     }

@@ -26,7 +26,8 @@ public class NoSkwlServer {
     public static void main(String[] args) throws InterruptedException {
         int port = 7862;
         Server s = new Server(port);
-        s.start();
+        Thread serverThread = new Thread(s);
+        serverThread.start();
         List<Client> clients = new ArrayList<>();
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {

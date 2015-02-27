@@ -36,7 +36,8 @@ public class ClientTest {
     public static void main(String[] args) {
         int port = 7862;
         Server s = new Server(port);
-        s.start();
+        Thread serverThread = new Thread(s);
+        serverThread.start();
         Client sarah = new Client(new PrintWriter(System.out));
         sarah.setServer("127.0.0.1", 7862);
         Thread t = new Thread(sarah);
