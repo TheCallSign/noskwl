@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Server extends Thread implements Runnable {
+public class Server implements Runnable {
 
     public static final String VERSION = "0.1";
     public static final String BUILD
