@@ -65,7 +65,6 @@ public class ClientWorker implements Runnable {
     }
 
     private synchronized void pushToServer(Packet packet)  {
-        out.println("pushToServer();");
         Server.parsePacket(packet);
         
     }
@@ -102,17 +101,13 @@ public class ClientWorker implements Runnable {
     }
 
     private void parsePacket(Packet packet) throws UnsupportedEncodingException {
-        out.println("here");
         if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
-            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID");
+            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: "+userID);
             this.sendPacketToClient(Packet.UID, userID+"");
-            out.println("UID OUT OF SYNC");
-            this.sendPacketToClient(Packet.UID, userID);
+            this.sendPacketToClient(Packet.UID, userID+"");
         }
-        out.println("UID  IN SYNC");
         int command = packet.getIns();
         byte data[] = packet.getData();
-        System.out.println("From "+this.userID+command);
         pushToServer(packet);
         switch (command) {
             case Packet.MESSAGE:

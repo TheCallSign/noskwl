@@ -126,9 +126,9 @@ public class Client implements Runnable {
      private String parseMessage(Packet packet) throws UnsupportedEncodingException {
 //        System.out.println("GOT COMMAND : "+packet.getIns());
         if(this.uid == null){
-            this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT
+            this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT... ZOMG IT WORKS!!!!!
             
-        }out.println("CLI:"+packet.toString());
+        }
         int command = packet.getIns();
         byte data[] = packet.getData();
         switch (command) {
@@ -137,7 +137,7 @@ public class Client implements Runnable {
                 break;
             case Packet.UID:
                 this.uid =  new String(data, "UTF-8");
-                System.out.println("CLI: UID SET!");
+                out.println("UID: "+this.uid);
                 break;
             case Packet.SERVER_INFO:
                 showMessage("System infomation: "+new String(data, "UTF-8"));

@@ -29,7 +29,7 @@ public class NoSkwlServer {
         s.start();
         List<Client> clients = new ArrayList<>();
         List<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             Client c = new Client(new PrintWriter(System.out));
             c.setServer("127.0.0.1", port);
 
@@ -46,7 +46,6 @@ public class NoSkwlServer {
                 synchronized (c) {
                     c.wait();
                 }
-                c.setUsername("Cool guy");
 
                 c.sendMessageToAll("Hello from Client " + c.getUsername());
                 Thread.sleep(1000);

@@ -5,6 +5,7 @@
  */
 package net.strawberrystudios.noskwl;
 
+import net.strawberrystudios.noskwl.common.TextAreaWriter;
 import net.strawberrystudios.noskwl.common.Client;
 import net.strawberrystudios.noskwl.common.Server;
 import java.awt.event.ActionEvent;

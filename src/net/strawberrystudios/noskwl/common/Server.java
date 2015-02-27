@@ -57,7 +57,6 @@ public class Server extends Thread implements Runnable {
      * @param packet
      */
     public static synchronized void parsePacket(Packet packet) {
-        System.out.println("SERVER GOT MESSAGE PUSH: "+packet.getIns());
         switch (packet.getIns()) {
             case Packet.MESSAGE:
                 for (ClientWorker cw : clientMap.values()) {
@@ -77,6 +76,8 @@ public class Server extends Thread implements Runnable {
     private ServerSocket sockServ;
     private Socket connection;
 
+    private PrintStream stdout;
+    
     private final ExecutorService executor;
     private final int port;
 
@@ -86,6 +87,7 @@ public class Server extends Thread implements Runnable {
      * @param port Port to listen on
      */
     public Server(int port) {
+        this.stdout = null;
         executor = Executors.newCachedThreadPool();
         this.port = port;
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -133,11 +135,10 @@ public class Server extends Thread implements Runnable {
             clientSock = sockServ.accept();
         } catch (SocketTimeoutException e) {
             doMaintanance();
-            announce("Hello mah preps!");
             return;
         }
         ClientWorker cw = new ClientWorker(clientSock);
-        cw.setUsername(UID);
+        cw.setClientID(UID);
         executor.submit(cw);
         clientMap.put(UID, cw);
         System.out.println("Client connected with UID: " + UID);
@@ -172,6 +173,12 @@ public class Server extends Thread implements Runnable {
                     nicknameMap.put(uid, clientMap.get(uid).getNickname());
                 }
             }
+        }
+    }
+    
+    private void stdout(String str){
+        if(stdout != null){
+            stdout.println(str);
         }
     }
 
