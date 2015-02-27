@@ -44,6 +44,7 @@ public class Client implements Runnable {
     public Client(Writer writer) {
         this.packetQueue = new ConcurrentLinkedQueue();
         textOut = writer;
+        
     }
 
     public String getUsername() {

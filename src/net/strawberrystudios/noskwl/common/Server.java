@@ -29,6 +29,12 @@ public class Server implements Runnable {
     public static final String BUILD
             = ResourceBundle.getBundle("version").getString("BUILD");
 
+    private static Server instance;
+    
+    private static Server getInstance(){
+        return instance;
+    }
+    
     private static Stack messageStack;
     /*
      * TODO:
@@ -57,6 +63,7 @@ public class Server implements Runnable {
      * @param packet
      */
     public static synchronized void parsePacket(Packet packet) {
+        Server.getInstance().stdout("Got a packet!");
         switch (packet.getIns()) {
             case Packet.MESSAGE:
                 for (ClientWorker cw : clientMap.values()) {
@@ -87,6 +94,10 @@ public class Server implements Runnable {
      * @param port Port to listen on
      */
     public Server(int port) {
+        
+        //DO A PROPER SINGLETON DESIGN
+        instance = this;
+        
         this.stdout = null;
         executor = Executors.newCachedThreadPool();
         this.port = port;
@@ -102,7 +113,7 @@ public class Server implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println("NoSkwl Server version " + Server.VERSION + "." + Server.BUILD);
+            stdout("NoSkwl Server version " + Server.VERSION + "." + Server.BUILD);
             sockServ = new ServerSocket(port, 100);
             sockServ.setSoTimeout(5000);
             while (true) {
@@ -131,6 +142,7 @@ public class Server implements Runnable {
     private synchronized void waitForConnection() throws IOException {
         Socket clientSock;
         String UID = "NoSkwlUser_" + (clientMap.size() + 1);
+        stdout("New user: "+UID);
         try {
             clientSock = sockServ.accept();
         } catch (SocketTimeoutException e) {
