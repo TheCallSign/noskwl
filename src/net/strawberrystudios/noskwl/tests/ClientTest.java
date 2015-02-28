@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.tests;
 
 import net.strawberrystudios.noskwl.common.Server;
 import java.awt.event.ActionEvent;
@@ -21,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import net.strawberrystudios.noskwl.common.Client;
-import net.strawberrystudios.noskwl.NoSkwl;
+import net.strawberrystudios.noskwl.tests.NoSkwl;
 import net.strawberrystudios.noskwl.common.ObjectPacket;
 import net.strawberrystudios.noskwl.common.Packet;
 import static net.strawberrystudios.noskwl.common.Packet.*;

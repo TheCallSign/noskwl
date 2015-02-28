@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.tests;
 
 import net.strawberrystudios.noskwl.common.TextAreaWriter;
 import net.strawberrystudios.noskwl.common.Client;
@@ -16,7 +16,6 @@ import java.io.Writer;
 import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import net.thecallsign.common.Common;
 
 /**
  *

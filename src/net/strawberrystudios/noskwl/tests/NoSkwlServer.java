@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.tests;
 
 import net.strawberrystudios.noskwl.common.Client;
 import java.io.BufferedWriter;
@@ -21,7 +21,6 @@ import net.strawberrystudios.noskwl.common.Server;
  */
 public class NoSkwlServer {
 
-    public static final Object lock = new Object();
 
     public static void main(String[] args) throws InterruptedException {
         int port = 7862;

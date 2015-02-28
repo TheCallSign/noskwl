@@ -19,8 +19,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.strawberrystudios.noskwl.NoSkwl;
-import net.strawberrystudios.noskwl.NoSkwlServer;
+import net.strawberrystudios.noskwl.tests.NoSkwl;
+import net.strawberrystudios.noskwl.tests.NoSkwlServer;
 
 /**
  *
