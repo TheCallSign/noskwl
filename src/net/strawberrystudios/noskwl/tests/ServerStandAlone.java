@@ -15,20 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.tests;
+
+import net.strawberrystudios.noskwl.server.Server;
 
 /**
  *
- * @author St John
+ * @author St John Giddy @ Strawberry Studios (2015)
  */
-public class IllegalPortException extends Exception {
-
-    public IllegalPortException() {
-        super();
+public class ServerStandAlone {
+    public static void main(String[] args) {
+        Server server = Server.getInstance();
+        server.setStdout(System.out);
+        server.listen(7862);
     }
-
-    public IllegalPortException(String str) {
-        super(str);
-    }
-    
 }

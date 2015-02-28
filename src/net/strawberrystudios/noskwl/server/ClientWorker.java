@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,6 +12,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.strawberrystudios.noskwl.packet.ObjectPacket;
+import net.strawberrystudios.noskwl.packet.Packet;
+import net.strawberrystudios.noskwl.packet.PacketFactory;
 
 /**
  * <p>
@@ -32,6 +35,7 @@ public class ClientWorker implements Runnable {
     private final PacketFactory pf = new PacketFactory();
     private String userID;
 
+    private int pingSeq = 0;
     public ClientWorker(Socket socket) throws IOException {
         this.sock = socket;
         setupStreams();
@@ -52,7 +56,7 @@ public class ClientWorker implements Runnable {
     }
     public void setClientID(String clientID) {
         this.userID = clientID;
-        pf.setAddress(userID);
+        pf.setUID(userID);
     }
 
     //setup IO streams
@@ -93,7 +97,7 @@ public class ClientWorker implements Runnable {
                 break;
             }
         } while (true);
-        System.out.println("Client exited with name :" + this.clientUsername);
+        System.out.println("Client exited with name: " + this.clientUsername);
 
         this.shutdown();
 
@@ -113,13 +117,13 @@ public class ClientWorker implements Runnable {
                 break;
             case Packet.SET_USERNAME:
                 clientUsername = new String(data, Packet.CHARSET);
-                Server.getInstance().setClientUsername(this, clientUsername);
+                Server.getInstance().setClientWorkerUsername(this, clientUsername);
                 break;
             case Packet.PING:
                 sendPongToClient(packet);
                 break;
             case Packet.PONG:
-                Server.getInstance().stdout("PONG!");
+//                Server.getInstance().println("PONG!");
                 break;
             default:
                 System.out.println("Strange packet recived from " + this.userID);
@@ -174,6 +178,7 @@ public class ClientWorker implements Runnable {
     }
 
     void ping() {
-        sendPacketToClient(Packet.PING, null);
+        sendPacketToClient(Packet.PING, pingSeq+"");
+        pingSeq++;
     }
 }

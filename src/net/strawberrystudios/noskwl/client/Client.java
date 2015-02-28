@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.client;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -20,6 +20,11 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.strawberrystudios.noskwl.server.ClientWorker;
+import net.strawberrystudios.noskwl.packet.ObjectPacket;
+import net.strawberrystudios.noskwl.packet.Packet;
+import net.strawberrystudios.noskwl.packet.PacketFactory;
+import net.strawberrystudios.noskwl.server.Server;
 import net.strawberrystudios.noskwl.tests.MultiClientTest;
 
 /**
@@ -37,18 +42,31 @@ public class Client implements Runnable {
     private Socket connection;
     private String username;
     private String uid;
-    private final Writer textOut;
-    private final PacketFactory pf = new PacketFactory();
 
+    private final Writer textOut;
+    private final PacketFactory pf;
+
+
+    
     private final Queue packetQueue;
     private PrintStream stdout;
-    
-    
-    
+
     public Client(Writer writer) {
         this.packetQueue = new ConcurrentLinkedQueue();
         textOut = writer;
-        
+        pf = new PacketFactory();
+    }
+
+    public PacketFactory getPacketFactory() {
+        return pf;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setStdout(PrintStream stdout) {
+        this.stdout = stdout;
     }
 
     public String getUsername() {
@@ -59,7 +77,6 @@ public class Client implements Runnable {
         this.username = username;
         this.sendPacket(pf.getRawPacket(Packet.SET_USERNAME, username.getBytes()));
     }
-
     @Override
     public void run() {
         try {
@@ -74,7 +91,6 @@ public class Client implements Runnable {
             closeCrap();
         }
     }
-
     public void setServer(String ip, int port) {
         remoteIP = ip;
         remotePort = port;
@@ -86,7 +102,7 @@ public class Client implements Runnable {
         showMessage("Connecting to server...\n");
         connection = new Socket(InetAddress.getByName(remoteIP), remotePort);
         showMessage("Connected to: " + connection.getInetAddress().getHostName());
-        
+
     }
 
     //setup IO streams
@@ -95,22 +111,21 @@ public class Client implements Runnable {
         output.flush();
         input = new ObjectInputStream(connection.getInputStream());
         showMessage("Streams initialized");
-        synchronized(this){
+        synchronized (this) {
             this.notifyAll();
         }
     }
-
     private void clientLoop() throws IOException {
 //        this.connection.setSoTimeout(1000);
         do {
             try {
-                if(this.uid == null){
-                    getUserID();
+                if (this.uid == null) {
+                    getUIDFromServer();
                 }
                 Object p = null;
-                try{
-                     p = input.readObject();
-                } catch(SocketTimeoutException ex){
+                try {
+                    p = input.readObject();
+                } catch (SocketTimeoutException ex) {
                     continue;
                 }
                 Object packet[] = null;
@@ -127,13 +142,9 @@ public class Client implements Runnable {
             }
         } while (true);
     }
-
-     private String parseMessage(Packet packet) throws UnsupportedEncodingException {
+    private String parseMessage(Packet packet) throws UnsupportedEncodingException {
 //        System.out.println("GOT COMMAND : "+packet.getIns());
-        if(this.uid == null){
-            this.uid = packet.getAddress().split(":")[0]; // FIX THIS SHIT... ZOMG IT WORKS!!!!!
-            
-        }
+        
         int command = packet.getIns();
         byte data[] = packet.getData();
         switch (command) {
@@ -141,18 +152,18 @@ public class Client implements Runnable {
                 showMessage(new String(data, "UTF-8"));
                 break;
             case Packet.UID:
-                this.uid =  new String(data, "UTF-8");
+                pf.setUID(uid);
+                this.uid = new String(data, "UTF-8");
 //                out.println("UID: "+this.uid);
                 break;
             case Packet.SERVER_INFO:
-                showMessage("System infomation: "+new String(data, "UTF-8"));
+                println("System infomation: " + new String(data, "UTF-8"));
                 break;
             case Packet.PING:
                 sendPacket(pf.getRawPacket(Packet.PONG, null));
         }
         return null;
     }
-    
     //close streams and sockets
     private void closeCrap() {
         showMessage("\nDisconnecting...");
@@ -164,7 +175,6 @@ public class Client implements Runnable {
         } catch (IOException e) {
         }
     }
-
     private void showMessage(final String s) {
         try {
 //            textOut.append("CLI:"+s+"\n");
@@ -174,15 +184,12 @@ public class Client implements Runnable {
         }
     }
 
-   
-
     //send messages to server
     public synchronized void sendMessageToAll(String message) {
-        this.sendPacket(pf.getRawPacket("", Packet.MESSAGE, message.getBytes()));
+        this.sendPacket(pf.getRawPacket(Packet.MESSAGE, message.getBytes()));
 
     }
 
-     
     public synchronized void sendPacket(Object p) {
         try {
             output.writeObject(p);
@@ -195,15 +202,15 @@ public class Client implements Runnable {
         }
     }
 
-    private synchronized void getUserID() {
+    private synchronized void getUIDFromServer() {
         this.sendPacket(pf.getRawPacket("", Packet.GET_UID, null));
-        
+
     }
-    
-    
-    
-    private void stdout(){
-        
+
+    private void println(String str) {
+        if (stdout != null) {
+            stdout.println("CLI:" + str + "\n");
+        }
     }
 
 }

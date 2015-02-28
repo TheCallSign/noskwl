@@ -15,20 +15,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.server;
 
 /**
  *
  * @author St John
  */
-public class IllegalPortException extends Exception {
+class ClientDuplicateException extends Exception {
 
-    public IllegalPortException() {
-        super();
-    }
-
-    public IllegalPortException(String str) {
-        super(str);
+    public ClientDuplicateException() {
     }
     
 }

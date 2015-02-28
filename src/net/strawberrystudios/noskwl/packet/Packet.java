@@ -3,9 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.packet;
 
+import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Client messages are prefixed with a '1' (For messages in response to a
@@ -74,6 +78,12 @@ public abstract class Packet {
     
     @Override
     public String toString(){
-        return "["+this.getAddress()+"]["+this.getIns()+"]["+new String(this.getData())+"]";
+        try {
+            return MessageFormat.format("[{0}][{1}][{2}]", this.getAddress(), this.getIns(), new String(this.getData(), Packet.CHARSET));
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(Packet.class.getName()).log(Level.SEVERE, null, ex);
+            return MessageFormat.format("[{0}][{1}][{2}]", this.getAddress(), this.getIns(), new String(this.getData()));
+        }
+        
     }
 }

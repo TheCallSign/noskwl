@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl;
+package net.strawberrystudios.noskwl.packet;
 
 /**
  *
@@ -11,14 +11,15 @@ package net.strawberrystudios.noskwl;
  */
 public class PacketFactory {
     
-    private String address;
+    private String uuid;
     
     public PacketFactory(){
+        this.uuid = "";
          
     }    
     
     public PacketFactory(String address){
-        this.address = address;
+        this.uuid = address;
     }
 
     public Object getRawPacket(String addr, int ins, byte[] data) { 
@@ -31,14 +32,14 @@ public class PacketFactory {
     
     public Object getRawPacket(int ins, byte[] data) { 
         Object packetArray[] = new Object[3];
-        packetArray[0] = ":";
+        packetArray[0] = uuid+":SERV";
         packetArray[1] = ins;
         packetArray[2] = data;
         return (Object) packetArray;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setUID(String address) {
+        this.uuid = address;
     }
 
     
