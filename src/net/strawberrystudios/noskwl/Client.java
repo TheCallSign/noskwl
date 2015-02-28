@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl.common;
+package net.strawberrystudios.noskwl;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import static java.lang.System.out;
@@ -19,8 +20,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.strawberrystudios.noskwl.tests.NoSkwl;
-import net.strawberrystudios.noskwl.tests.NoSkwlServer;
+import net.strawberrystudios.noskwl.tests.MultiClientTest;
 
 /**
  *
@@ -41,6 +41,10 @@ public class Client implements Runnable {
     private final PacketFactory pf = new PacketFactory();
 
     private final Queue packetQueue;
+    private PrintStream stdout;
+    
+    
+    
     public Client(Writer writer) {
         this.packetQueue = new ConcurrentLinkedQueue();
         textOut = writer;
@@ -65,7 +69,7 @@ public class Client implements Runnable {
         } catch (EOFException e) {
             showMessage("\nConection ended.");
         } catch (IOException ex) {
-            Logger.getLogger(NoSkwl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             closeCrap();
         }
@@ -138,11 +142,13 @@ public class Client implements Runnable {
                 break;
             case Packet.UID:
                 this.uid =  new String(data, "UTF-8");
-                out.println("UID: "+this.uid);
+//                out.println("UID: "+this.uid);
                 break;
             case Packet.SERVER_INFO:
                 showMessage("System infomation: "+new String(data, "UTF-8"));
                 break;
+            case Packet.PING:
+                sendPacket(pf.getRawPacket(Packet.PONG, null));
         }
         return null;
     }
@@ -191,6 +197,12 @@ public class Client implements Runnable {
 
     private synchronized void getUserID() {
         this.sendPacket(pf.getRawPacket("", Packet.GET_UID, null));
+        
+    }
+    
+    
+    
+    private void stdout(){
         
     }
 

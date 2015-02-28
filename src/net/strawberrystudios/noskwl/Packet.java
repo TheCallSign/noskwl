@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl.common;
+package net.strawberrystudios.noskwl;
 
 import java.util.Arrays;
 
@@ -45,6 +45,9 @@ public abstract class Packet {
 
     public static final int SERVER_INFO = 80;
 
+    public static final int PING = 81;
+    public static final int PONG = 181;
+    
     /* RESERVED FUTURE CONSTANTS - TO BE IMPLEMENTED */
     private static final int GET_FILELIST = 180;
     private static final int FILELIST = 80;

@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl.common;
+package net.strawberrystudios.noskwl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
-import static java.lang.System.out;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +64,7 @@ public class ClientWorker implements Runnable {
     }
 
     private synchronized void pushToServer(Packet packet)  {
-        Server.parsePacket(packet);
+        Server.getInstance().parsePacket(packet);
         
     }
 
@@ -108,18 +107,23 @@ public class ClientWorker implements Runnable {
         }
         int command = packet.getIns();
         byte data[] = packet.getData();
-        pushToServer(packet);
         switch (command) {
             case Packet.MESSAGE:
+                pushToServer(packet);
                 break;
             case Packet.SET_USERNAME:
                 clientUsername = new String(data, Packet.CHARSET);
-                Server.setClientUsername(this, clientUsername);
+                Server.getInstance().setClientUsername(this, clientUsername);
+                break;
+            case Packet.PING:
+                sendPongToClient(packet);
+                break;
+            case Packet.PONG:
+                Server.getInstance().stdout("PONG!");
                 break;
             default:
                 System.out.println("Strange packet recived from " + this.userID);
         }
-        pushToServer(packet);
     }
 
     public void sendMessageToClient(String message) {
@@ -139,12 +143,22 @@ public class ClientWorker implements Runnable {
             //chatWindow.append("\n Sending failure");
         }
     }
+    
+    public void sendPongToClient(Packet p){
+        try {
+            output.writeObject(pf.getRawPacket("SERV:"+this.userID, Packet.PONG, p.getData()));
+            output.flush();
+            //showMessage("\n" + clientUsername + ": " + message);
+        } catch (IOException e) {
+            //chatWindow.append("\n Sending failure");
+        }
+    }
 
     private void shutdown() {
         try {
             output.close();
             input.close();
-            Server.removeClient(userID);
+            Server.getInstance().removeClient(userID);
         } catch (IOException ex) {
             Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -157,5 +171,9 @@ public class ClientWorker implements Runnable {
 
     private void showMessage(String str) {
        System.out.println(str);
+    }
+
+    void ping() {
+        sendPacketToClient(Packet.PING, null);
     }
 }
