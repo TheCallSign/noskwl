@@ -24,9 +24,9 @@ public class MultiClientTest {
 
     public static void main(String[] args) throws InterruptedException {
         int port = 7862;
-        Server s = Server.getInstance();
-        s.setStdout(System.out);
-        s.listen(port);
+//        Server s = Server.getInstance();
+//        s.setStdout(System.out);
+//        s.listen(port);
         List<Client> clients = new ArrayList<>();
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
