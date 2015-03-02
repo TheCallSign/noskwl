@@ -125,8 +125,10 @@ public class ClientWorker implements Runnable {
             case Packet.PONG:
 //                Server.getInstance().println("PONG!");
                 break;
+            case Packet.GET_UID:
+                sendPacketToClient(Packet.UID, userID);
             default:
-                System.out.println("Strange packet recived from " + this.userID);
+                System.out.println("Strange packet recived from " + this.userID + ": "+command);
         }
     }
 

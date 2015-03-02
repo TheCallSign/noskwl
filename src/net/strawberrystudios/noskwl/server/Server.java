@@ -30,8 +30,17 @@ public class Server extends Thread {
     public static final String BUILD
             = ResourceBundle.getBundle("version").getString("BUILD");
 
+    
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
+        
+    
     private static Server instance;
 
+    
+    static {
+        logger.setUseParentHandlers(false);
+        logger.addHandler(new ConsoleHandler());
+    }
 
     /*
      * TODO:
@@ -220,7 +229,6 @@ public class Server extends Thread {
     }
 
     public void log(String str) {
-        Logger logger = Logger.getLogger(Server.class.getName());
 //        logger.
         if (stdout != null) {
             logger.info(str);
