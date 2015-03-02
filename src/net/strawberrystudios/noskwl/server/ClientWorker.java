@@ -97,7 +97,7 @@ public class ClientWorker implements Runnable {
                 break;
             }
         } while (true);
-        System.out.println("Client exited with name: " + this.clientUsername);
+        System.out.println("Client exited with name: " + this.userID);
 
         this.shutdown();
 
@@ -106,8 +106,7 @@ public class ClientWorker implements Runnable {
     private void parsePacket(Packet packet) throws UnsupportedEncodingException {
         if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
             this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: "+userID);
-            this.sendPacketToClient(Packet.UID, userID+"");
-            this.sendPacketToClient(Packet.UID, userID+"");
+            this.sendPacketToClient(Packet.UID, (userID+"").getBytes());
         }
         int command = packet.getIns();
         byte data[] = packet.getData();
@@ -126,23 +125,24 @@ public class ClientWorker implements Runnable {
 //                Server.getInstance().println("PONG!");
                 break;
             case Packet.GET_UID:
-                sendPacketToClient(Packet.UID, userID);
+                sendPacketToClient(Packet.UID, (userID+"").getBytes());
+                break;
             default:
                 System.out.println("Strange packet recived from " + this.userID + ": "+command);
         }
     }
 
     public void sendMessageToClient(String message) {
-        this.sendPacketToClient(Packet.MESSAGE, message);
+        this.sendPacketToClient(Packet.MESSAGE, message.getBytes());
     }
     
     public void sendSystemMessageToClient(String message) {
-        this.sendPacketToClient(Packet.SERVER_INFO, message);
+        this.sendPacketToClient(Packet.SERVER_INFO, message.getBytes());
     }
     
-    public void sendPacketToClient(int ins, String message) {
+    public void sendPacketToClient(int ins, byte[] bytes) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, (""+message).getBytes()));
+            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, bytes));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -180,7 +180,7 @@ public class ClientWorker implements Runnable {
     }
 
     void ping() {
-        sendPacketToClient(Packet.PING, pingSeq+"");
+        sendPacketToClient(Packet.PING, (pingSeq+"").getBytes());
         pingSeq++;
     }
 }

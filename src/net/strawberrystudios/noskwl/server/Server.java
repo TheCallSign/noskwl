@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.IllegalPortException;
 import net.strawberrystudios.noskwl.packet.Packet;
@@ -38,6 +39,8 @@ public class Server extends Thread {
 
     
     static {
+        
+        LogManager.getLogManager().reset();
         logger.setUseParentHandlers(false);
         logger.addHandler(new ConsoleHandler());
     }
