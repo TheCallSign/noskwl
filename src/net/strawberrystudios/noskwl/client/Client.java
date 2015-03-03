@@ -32,7 +32,7 @@ import net.strawberrystudios.noskwl.packet.PacketFactory;
 public class Client implements Runnable {
 
     public static final String VERSION = "0.1.3";
-    public static final Logger logger =  Logger.getLogger(Client.class.getName());
+    public static final Logger logger = Logger.getLogger(Client.class.getName());
 
     private ObjectOutputStream output;
     private ObjectInputStream input;
@@ -45,8 +45,6 @@ public class Client implements Runnable {
     private final Writer textOut;
     private final PacketFactory pf;
 
-
-    
     private final Queue packetQueue;
     private PrintStream stdout;
 
@@ -76,6 +74,7 @@ public class Client implements Runnable {
         this.username = username;
         this.sendPacket(pf.getRawPacket(Packet.SET_USERNAME, username.getBytes()));
     }
+
     @Override
     public void run() {
         try {
@@ -90,6 +89,7 @@ public class Client implements Runnable {
             closeCrap();
         }
     }
+
     public void setServer(String ip, int port) {
         remoteIP = ip;
         remotePort = port;
@@ -114,6 +114,7 @@ public class Client implements Runnable {
             this.notifyAll();
         }
     }
+
     private void clientLoop() throws IOException {
 //        this.connection.setSoTimeout(1000);
         do {
@@ -141,9 +142,10 @@ public class Client implements Runnable {
             }
         } while (true);
     }
+
     private String parseMessage(Packet packet) throws UnsupportedEncodingException {
 //        System.out.println("GOT COMMAND : "+packet.getIns());
-        
+
         int command = packet.getIns();
         byte data[] = packet.getData();
         switch (command) {
@@ -163,6 +165,7 @@ public class Client implements Runnable {
         }
         return null;
     }
+
     //close streams and sockets
     private void closeCrap() {
         println("\nDisconnecting...");
@@ -174,11 +177,12 @@ public class Client implements Runnable {
         } catch (IOException e) {
         }
     }
-    
 
     //send messages to server
     public synchronized void sendMessageToAll(String message) {
-        this.sendPacket(pf.getRawPacket(Packet.MESSAGE, message.getBytes()));
+        if (!message.equals("")) {
+            this.sendPacket(pf.getRawPacket(Packet.MESSAGE, message.getBytes()));
+        }
 
     }
 
@@ -200,8 +204,18 @@ public class Client implements Runnable {
     }
 
     private void println(String str) {
+//        out.println(stdout);
         if (stdout != null) {
-            stdout.println("CLI:" + str + "\n");
+
+            ((PrintStream) stdout).println(str + "\n");
+
+        } 
+        if(textOut != null){
+            try {
+                textOut.append(str + "\n");
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
