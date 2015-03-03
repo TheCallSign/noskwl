@@ -33,7 +33,7 @@ public class ClientWorker implements Runnable {
     private final Socket sock;
     private String clientUsername;
     private final PacketFactory pf = new PacketFactory();
-    private String userID;
+    private String uuid;
 
     private int pingSeq = 0;
 
@@ -53,12 +53,12 @@ public class ClientWorker implements Runnable {
     }
 
     public String getClientID() {
-        return userID;
+        return uuid;
     }
 
     public void setClientID(String clientID) {
-        this.userID = clientID;
-        pf.setUID(userID);
+        this.uuid = clientID;
+        pf.setUID(uuid);
     }
 
     //setup IO streams
@@ -100,16 +100,16 @@ public class ClientWorker implements Runnable {
                 break;
             }
         } while (true);
-        System.out.println("Client exited with name: " + this.userID);
+        System.out.println("Client exited with name: " + this.uuid);
 
         this.shutdown();
 
     }
 
     private void parsePacket(Packet packet) throws UnsupportedEncodingException {
-        if (!packet.getAddress().split(":", 2)[0].equals(this.userID)) {
-            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: " + userID);
-            this.sendPacketToClient(Packet.UID, (userID + "").getBytes());
+        if (!packet.getAddress().split(":", 2)[0].equals(this.uuid)) {
+            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: " + uuid);
+            this.sendPacketToClient(Packet.UID, (uuid + "").getBytes());
         }
         int command = packet.getIns();
         byte data[] = packet.getData();
@@ -119,7 +119,7 @@ public class ClientWorker implements Runnable {
                 break;
             case Packet.SET_USERNAME:
                 clientUsername = new String(data, Packet.CHARSET);
-                Server.getInstance().setClientWorkerUsername(this, clientUsername);
+                Server.getInstance().setClientWorkerUsername(this.uuid, clientUsername);
                 break;
             case Packet.PING:
                 sendPongToClient(packet);
@@ -128,10 +128,10 @@ public class ClientWorker implements Runnable {
 //                Server.getInstance().println("PONG!");
                 break;
             case Packet.GET_UID:
-                sendPacketToClient(Packet.UID, (userID + "").getBytes());
+                sendPacketToClient(Packet.UID, (uuid + "").getBytes());
                 break;
             default:
-                System.out.println("Strange packet recived from " + this.userID + ": " + command);
+                System.out.println("Strange packet recived from " + this.uuid + ": " + command);
         }
     }
 
@@ -145,7 +145,7 @@ public class ClientWorker implements Runnable {
 
     public void sendPacketToClient(int ins, byte[] bytes) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:" + this.userID, ins, bytes));
+            output.writeObject(pf.getRawPacket("SERV:" + this.uuid, ins, bytes));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -156,7 +156,7 @@ public class ClientWorker implements Runnable {
     public void sendPacketToClient(String addr, int ins, byte[] bytes) {
         String sourceAddr = addr.split(":")[0];
         try {
-            output.writeObject(pf.getRawPacket(sourceAddr + ":" + this.userID, ins, bytes));
+            output.writeObject(pf.getRawPacket(sourceAddr + ":" + this.uuid, ins, bytes));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -166,7 +166,7 @@ public class ClientWorker implements Runnable {
 
     public void sendPongToClient(Packet p) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:" + this.userID, Packet.PONG, p.getData()));
+            output.writeObject(pf.getRawPacket("SERV:" + this.uuid, Packet.PONG, p.getData()));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -178,7 +178,7 @@ public class ClientWorker implements Runnable {
         try {
             output.close();
             input.close();
-            Server.getInstance().removeClient(userID);
+            Server.getInstance().removeClient(uuid);
         } catch (IOException ex) {
             Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
         }

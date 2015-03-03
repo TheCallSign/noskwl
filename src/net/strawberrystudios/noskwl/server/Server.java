@@ -122,9 +122,9 @@ public class Server extends Thread {
         }
     }
 
-    public synchronized void setClientWorkerUsername(ClientWorker cw, String username) {
+    public synchronized void setClientWorkerUsername(String uuid, String username) {
         try {
-            clientManager.modifyClientUsername(cw, username);
+            clientManager.modifyClientUsername(uuid, username);
         } catch (ClientDuplicateException | ItemNotFoundException ex) {
             log("Exception setting Client Username: " + ex.toString());
         }
@@ -139,7 +139,7 @@ public class Server extends Thread {
 //        Server.getInstance().log("Got a packet!");
         switch (packet.getIns()) {
             case Packet.MESSAGE:
-                for (ClientWorker cw : clientManager.getAllClients()) {
+                for (ClientWorker cw : clientManager.getAllWorkers()) {
                     cw.sendPacketToClient(packet.getAddress(), Packet.MESSAGE, packet.getData());
                 }
                 break;
@@ -201,6 +201,8 @@ public class Server extends Thread {
                     clientManager.addClient(cw, "", UID);
                 } catch (ClientDuplicateException ex) {
                     log(ex.getLocalizedMessage());
+                } catch (ServerFullException ex) {
+                    cw.sendPacketToClient(Packet.SERVER_FULL, null);
                 }
                 log("Client connected with UID: " + UID);
             } catch (SocketTimeoutException e) {
@@ -216,7 +218,7 @@ public class Server extends Thread {
 
         // ping every one second or so, I can do this better with a timer.. TODO: ADD SERVER TIMER :D
         if (counter % 12 == 0) {
-            for (ClientWorker cw : clientManager.getAllClients()) {
+            for (ClientWorker cw : clientManager.getAllWorkers()) {
                 if (cw != null) {
                     cw.ping();
                 }
@@ -237,7 +239,7 @@ public class Server extends Thread {
     }
 
     private void announce(String message) {
-        for (ClientWorker cw : clientManager.getAllClients()) {
+        for (ClientWorker cw : clientManager.getAllWorkers()) {
             cw.sendMessageToClient(message);
         }
         // push to all clients, notifying them that it is an info message

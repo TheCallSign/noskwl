@@ -152,7 +152,6 @@ public class Client implements Runnable {
         switch (command) {
             case Packet.MESSAGE:
                 println(packet.getAddress().split(":")[0] + ": " + new String(data, "UTF-8"));
-                println("ere?");
                 break;
             case Packet.UID:
                 pf.setUID(uid);
@@ -160,11 +159,13 @@ public class Client implements Runnable {
 //                out.println("UID: "+this.uid);
                 break;
             case Packet.SERVER_INFO:
-                println("System infomation: " + new String(data, "UTF-8"));
+                sysprintln("System infomation: " + new String(data, "UTF-8"));
                 break;
             case Packet.PING:
                 sendPacket(pf.getRawPacket(Packet.PONG, null));
                 break;
+            case Packet.SERVER_FULL:
+                println("Server full");
         }
         return null;
     }
@@ -225,6 +226,16 @@ public class Client implements Runnable {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    private void sysprintln(String str) {
+        
+        if (stdout != null) {
+
+            ((PrintStream) stdout).println(str + "\n");
+
+        }
+        
     }
 
 }

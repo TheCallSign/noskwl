@@ -52,6 +52,9 @@ public abstract class Packet {
     public static final int PING = 81;
     public static final int PONG = 181;
     
+    
+    public static final int SERVER_FULL = 182;
+    
     /* RESERVED FUTURE CONSTANTS - TO BE IMPLEMENTED */
     private static final int GET_FILELIST = 180;
     private static final int FILELIST = 80;
