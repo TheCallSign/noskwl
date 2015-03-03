@@ -53,6 +53,7 @@ public class SingleClientTest {
         while(true){
             System.out.print("Enter: ");
             cli.sendPacket(cli.getPacketFactory().getRawPacket(Packet.MESSAGE, in.nextLine().getBytes()));
+            
         }
     }
     

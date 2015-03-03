@@ -26,7 +26,7 @@ import net.strawberrystudios.noskwl.packet.Data;
  */
 public class UnitTest {
     public static void main(String[] args) {
-        Data <Integer> d = new Data(Integer.class, 32);
+        Data <Integer> d = new Data<>(Integer.class, 32);
         Data p = d;
         out.println(d);
         out.println(d.getType());

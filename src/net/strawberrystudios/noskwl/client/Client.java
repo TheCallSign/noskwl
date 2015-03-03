@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import static java.lang.System.out;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -82,7 +83,7 @@ public class Client implements Runnable {
             setupStreams();
             clientLoop();
         } catch (EOFException e) {
-            showMessage("\nConection ended.");
+            println("\nConection ended.");
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -97,9 +98,9 @@ public class Client implements Runnable {
     //conect to server
     private void connectToServer() throws IOException {
 
-        showMessage("Connecting to server...\n");
+        println("Connecting to server...\n");
         connection = new Socket(InetAddress.getByName(remoteIP), remotePort);
-        showMessage("Connected to: " + connection.getInetAddress().getHostName());
+        println("Connected to: " + connection.getInetAddress().getHostName());
 
     }
 
@@ -108,7 +109,7 @@ public class Client implements Runnable {
         output = new ObjectOutputStream(connection.getOutputStream());
         output.flush();
         input = new ObjectInputStream(connection.getInputStream());
-        showMessage("Streams initialized");
+        println("Streams initialized");
         synchronized (this) {
             this.notifyAll();
         }
@@ -136,7 +137,7 @@ public class Client implements Runnable {
                 }
                 parseMessage(new ObjectPacket(packet));
             } catch (ClassNotFoundException e) {
-                showMessage("Invalid message.");
+                println("Invalid message.");
             }
         } while (true);
     }
@@ -147,7 +148,7 @@ public class Client implements Runnable {
         byte data[] = packet.getData();
         switch (command) {
             case Packet.MESSAGE:
-                showMessage(new String(data, "UTF-8"));
+                println(new String(data, "UTF-8"));
                 break;
             case Packet.UID:
                 pf.setUID(uid);
@@ -164,7 +165,7 @@ public class Client implements Runnable {
     }
     //close streams and sockets
     private void closeCrap() {
-        showMessage("\nDisconnecting...");
+        println("\nDisconnecting...");
         try {
             output.close();
             output.flush();
@@ -173,14 +174,7 @@ public class Client implements Runnable {
         } catch (IOException e) {
         }
     }
-    private void showMessage(final String s) {
-        try {
-//            textOut.append("CLI:"+s+"\n");
-            textOut.flush();
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    
 
     //send messages to server
     public synchronized void sendMessageToAll(String message) {
@@ -196,7 +190,7 @@ public class Client implements Runnable {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NullPointerException ex) {
             Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
-            showMessage("Send packet failure, connection probably lost");
+            println("Send packet failure, connection probably lost");
         }
     }
 
