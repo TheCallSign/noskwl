@@ -32,7 +32,7 @@ public class Server extends Thread {
             = ResourceBundle.getBundle("version").getString("BUILD");
 
     
-    private static final Logger logger = Logger.getLogger(Server.class.getName());
+    public static final Logger logger = Logger.getLogger(Server.class.getName());
         
     
     private static Server instance;

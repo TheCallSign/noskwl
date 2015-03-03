@@ -12,7 +12,6 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import static java.lang.System.out;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -24,8 +23,6 @@ import net.strawberrystudios.noskwl.server.ClientWorker;
 import net.strawberrystudios.noskwl.packet.ObjectPacket;
 import net.strawberrystudios.noskwl.packet.Packet;
 import net.strawberrystudios.noskwl.packet.PacketFactory;
-import net.strawberrystudios.noskwl.server.Server;
-import net.strawberrystudios.noskwl.tests.MultiClientTest;
 
 /**
  *
@@ -34,6 +31,7 @@ import net.strawberrystudios.noskwl.tests.MultiClientTest;
 public class Client implements Runnable {
 
     public static final String VERSION = "0.1.3";
+    public static final Logger logger =  Logger.getLogger(Client.class.getName());
 
     private ObjectOutputStream output;
     private ObjectInputStream input;
@@ -86,7 +84,7 @@ public class Client implements Runnable {
         } catch (EOFException e) {
             showMessage("\nConection ended.");
         } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             closeCrap();
         }
