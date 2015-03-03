@@ -31,7 +31,8 @@ public class SingleClientTest {
 //        s.setStdout(System.out);
 //        s.listen(port);
         Client cli = new Client(new PrintWriter(System.out));
-        cli.setServer("127.0.0.1", 7862);
+//        cli.setServer("127.0.0.1", 7862);
+        cli.setServer("10.52.161.111", 7862);
         cli.setStdout(System.out);
         Thread t = new Thread(cli);
 //        ServerTest sally = new ServerTest();
@@ -51,7 +52,7 @@ public class SingleClientTest {
         cli.sendPacket(cli.getPacketFactory().getRawPacket(MESSAGE, "I am also really cool".getBytes()));
         Scanner in = new Scanner(System.in);
         while(true){
-            System.out.print("Enter: ");
+            
             cli.sendPacket(cli.getPacketFactory().getRawPacket(Packet.MESSAGE, in.nextLine().getBytes()));
             
         }
