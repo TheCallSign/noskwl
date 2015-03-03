@@ -17,6 +17,7 @@
  */
 package net.strawberrystudios.noskwl.server;
 
+import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,12 +30,12 @@ import java.util.Map;
  */
 public class ClientManager {
 
-    ClientWorker clientWorkerList[];
-    String clientUsernameList[];
-    String clientUUIDList[];
+    private final ClientWorker clientWorkerList[];
+    private final String clientUsernameList[];
+    private final String clientUUIDList[];
 
     // false means empty, true means occupied.
-    boolean[] clientSlots;
+    private final boolean[] clientSlots;
 
     private int head;
     private int size;
@@ -42,6 +43,7 @@ public class ClientManager {
     private int free;
 
     public ClientManager(int maxSize) {
+        this.maxSize =  maxSize;
         clientSlots = new boolean[maxSize];
         clientWorkerList = new ClientWorker[maxSize];
         clientUsernameList = new String[maxSize];
@@ -52,16 +54,16 @@ public class ClientManager {
     public int getMaxSize() {
         return maxSize;
     }
-    
+
     public int getFree() {
         return free;
     }
-    
+
     public int getSize() {
         return size;
     }
 
-    public synchronized void addClient(ClientWorker cw, String clientUsername, String clientUUID) throws ClientDuplicateException{
+    public synchronized void addClient(ClientWorker cw, String clientUsername, String clientUUID) throws ClientDuplicateException {
         if (Arrays.asList(clientUsernameList).contains(clientUsername)
                 || Arrays.asList(clientUsernameList).contains(clientUUID)) {
             throw new ClientDuplicateException();
@@ -74,7 +76,7 @@ public class ClientManager {
         size++;
 
     }
-    
+
     public void modifyClientUsername(ClientWorker cw, String newClientUsername) throws ClientDuplicateException, ItemNotFoundException {
         if (Arrays.asList(clientUsernameList).contains(newClientUsername)) {
             throw new ClientDuplicateException();
@@ -86,9 +88,11 @@ public class ClientManager {
                 itemFound = true;
             }
         }
-        if(!itemFound) throw new ItemNotFoundException();
+        if (!itemFound) {
+            throw new ItemNotFoundException();
+        }
     }
-    
+
     public synchronized void removeClient(ClientWorker cw) throws ItemNotFoundException {
         boolean itemFound = false;
         for (int i = 0; i < maxSize; i++) {
@@ -154,10 +158,18 @@ public class ClientManager {
 
     private int getFirstOpenSpace() {
         for (int i = 0; i < maxSize; i++) {
-            if (clientSlots[i] == false) {
+            System.out.println(clientSlots[i]);
+            
+            System.out.println("HERE???!!");
+            if (!clientSlots[i]) {
                 return i;
             }
         }
-        return -1;
+        System.out.println("Here?"+maxSize);
+        return 0;
+    }
+
+    public ClientWorker[] getAllClients() {
+        return this.clientWorkerList;
     }
 }

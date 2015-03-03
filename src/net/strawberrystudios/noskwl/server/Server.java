@@ -1,7 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015 Strawberry Studios
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 package net.strawberrystudios.noskwl.server;
 
@@ -11,10 +23,6 @@ package net.strawberrystudios.noskwl.server;
  */
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,18 +53,6 @@ public class Server extends Thread {
         logger.addHandler(new ConsoleHandler());
     }
 
-    /*
-     * TODO:
-     * ClientWorker is HashMap'ed to a LinkedList //wtf this doesnt make sense
-     * The LinkedList contains the following:
-     * 0: Server-set username
-     * 1: Client-set username
-     */
-    //  <HashMap of ClientWorker thread and the Client's username
-    private static final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap<>();
-    // (constant - connection unique) [UserID], [nickname]  User set (custom)
-    private static final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap<>();
-//    private static final List<ClientWorker> clientList = new ArrayList();
 
     public static Server getInstance() {
         if (instance == null) {
@@ -66,6 +62,20 @@ public class Server extends Thread {
             return instance;
         }
     }
+
+
+    /*
+     * TODO:
+     * ClientWorker is HashMap'ed to a LinkedList //wtf this doesnt make sense
+     * The LinkedList contains the following:
+     * 0: Server-set username
+     * 1: Client-set username
+     */
+    //  <HashMap of ClientWorker thread and the Client's username
+    private final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap<>();
+    // (constant - connection unique) [UserID], [nickname]  User set (custom)
+    private final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap<>();
+//    private static final List<ClientWorker> clientList = new ArrayList();
 
     private ClientManager clientManager;
     
@@ -108,11 +118,19 @@ public class Server extends Thread {
     }
 
     public synchronized void removeClient(String userID) {
-        clientMap.remove(userID);
+        try {
+            clientManager.removeClient(userID);
+        } catch (ItemNotFoundException ex) {
+            log(ex.getLocalizedMessage());
+        }
     }
 
-    public synchronized void setClientWorkerUsername(ClientWorker cw, String userID) {
-        clientMap.put(userID, cw);
+    public synchronized void setClientWorkerUsername(ClientWorker cw, String username) {
+        try {
+            clientManager.modifyClientUsername(cw, username);
+        } catch (ClientDuplicateException | ItemNotFoundException ex) {
+            log(ex.getLocalizedMessage());
+        }
     }
 
     /**
@@ -121,10 +139,10 @@ public class Server extends Thread {
      * @param packet
      */
     public synchronized void parsePacket(Packet packet) {
-        Server.getInstance().log("Got a packet!");
+//        Server.getInstance().log("Got a packet!");
         switch (packet.getIns()) {
             case Packet.MESSAGE:
-                for (ClientWorker cw : clientMap.values()) {
+                for (ClientWorker cw : clientManager.getAllClients()) {
                     try {
                         cw.sendMessageToClient(new String(packet.getData(), Packet.CHARSET));
                     } catch (UnsupportedEncodingException ex) {
@@ -179,13 +197,17 @@ public class Server extends Thread {
     private void serverLoop() {
         while (true) {
             Socket clientSock;
-            String UID = "NoSkwlUser_" + (clientMap.size() + 1);
+            String UID = "NoSkwlUser_" + (clientManager.getSize() + 1);
             try {
                 clientSock = sockServ.accept();
                 ClientWorker cw = new ClientWorker(clientSock);
                 cw.setClientID(UID);
                 executor.submit(cw);
-                clientMap.put(UID, cw);
+                try {
+                    clientManager.addClient(cw, "", UID);
+                } catch (ClientDuplicateException ex) {
+                    log(ex.getLocalizedMessage());
+                }
                 log("Client connected with UID: " + UID);
             } catch (SocketTimeoutException e) {
                 doMaintanance();
@@ -196,16 +218,10 @@ public class Server extends Thread {
     }
     private void doMaintanance() {
         counter++;
-        if (nicknameMap.values().contains("")) {
-            for (String uid : nicknameMap.keySet()) {
-                if (((String) nicknameMap.get(uid)).isEmpty()) {
-                    nicknameMap.put(uid, clientMap.get(uid).getNickname());
-                }
-            }
-        }
+        
         // ping every one second or so, I can do this better with a timer.. TODO: ADD SERVER TIMER :D
         if (counter % 12 == 0) {
-            for (ClientWorker cw : clientMap.values()) {
+            for (ClientWorker cw : clientManager.getAllClients()) {
                 cw.ping();
 //                println("Pinged " + cw.getClientID());
             }
@@ -225,7 +241,7 @@ public class Server extends Thread {
     }
 
     private void announce(String message) {
-        for (ClientWorker cw : clientMap.values()) {
+        for (ClientWorker cw : clientManager.getAllClients()) {
             cw.sendMessageToClient(message);
         }
         // push to all clients, notifying them that it is an info message

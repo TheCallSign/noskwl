@@ -21,7 +21,7 @@ package net.strawberrystudios.noskwl.server;
  *
  * @author St John
  */
-class ClientDuplicateException extends Exception {
+public class ClientDuplicateException extends Exception {
 
     public ClientDuplicateException() {
     }
