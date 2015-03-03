@@ -251,7 +251,7 @@ public class GUI extends javax.swing.JFrame {
     private void menUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menUsernameActionPerformed
         username = (JOptionPane.showInputDialog(null, "Enter a user name: ", "User name",
                 JOptionPane.CANCEL_OPTION));
-        msgDisp.append("Welcome, " + username);
+        msgDisp.append("Welcome, " + username + "\n");
         setTitle(username + "'s chat");
     }//GEN-LAST:event_menUsernameActionPerformed
 
