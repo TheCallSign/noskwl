@@ -104,7 +104,6 @@
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
                       <Component id="btnSend" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="162" pref="456" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -112,9 +111,9 @@
                           <Component id="jScrollPane2" pref="556" max="32767" attributes="0"/>
                           <Component id="msgField" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="72" max="-2" attributes="0"/>

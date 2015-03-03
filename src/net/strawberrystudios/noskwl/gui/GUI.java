@@ -14,7 +14,7 @@ import net.strawberrystudios.noskwl.packet.PacketFactory;
 //10.52.161.110
 /**
  *
- * @author gregoryj
+ * @author Jamie Gregory @ Strawberry Studios (2015)
  */
 public class GUI extends javax.swing.JFrame {
 
