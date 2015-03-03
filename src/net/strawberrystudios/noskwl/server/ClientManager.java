@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.strawberrystudios.noskwl.packet.Packet;
 
 /**
  *
@@ -39,11 +40,11 @@ public class ClientManager {
 
     private int head;
     private int size;
-    private int maxSize;
+    private final int maxSize;
     private int free;
 
     public ClientManager(int maxSize) {
-        this.maxSize =  maxSize;
+        this.maxSize = maxSize;
         clientSlots = new boolean[maxSize];
         clientWorkerList = new ClientWorker[maxSize];
         clientUsernameList = new String[maxSize];
@@ -73,6 +74,7 @@ public class ClientManager {
         clientWorkerList[head] = cw;
         clientUsernameList[head] = clientUsername;
         clientUUIDList[head] = clientUUID;
+        clientSlots[head] = true;
         size++;
 
     }
@@ -85,6 +87,7 @@ public class ClientManager {
         for (int i = 0; i < maxSize; i++) {
             if (clientWorkerList[i] == cw) {
                 clientUsernameList[i] = newClientUsername;
+                cw.sendPacketToClient(Packet.CLIENT_USERNAME, newClientUsername.getBytes());
                 itemFound = true;
             }
         }
@@ -158,18 +161,18 @@ public class ClientManager {
 
     private int getFirstOpenSpace() {
         for (int i = 0; i < maxSize; i++) {
-            System.out.println(clientSlots[i]);
-            
-            System.out.println("HERE???!!");
             if (!clientSlots[i]) {
                 return i;
             }
         }
-        System.out.println("Here?"+maxSize);
         return 0;
     }
 
     public ClientWorker[] getAllClients() {
-        return this.clientWorkerList;
+        if (this.clientWorkerList != null) {
+            return this.clientWorkerList;
+        } else {
+            return null;
+        }
     }
 }

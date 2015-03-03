@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import net.strawberrystudios.noskwl.IllegalPortException;
+import net.strawberrystudios.noskwl.client.IllegalPortException;
 import net.strawberrystudios.noskwl.packet.Packet;
 
 public class Server extends Thread {
@@ -39,20 +39,17 @@ public class Server extends Thread {
     public static final String BUILD
             = ResourceBundle.getBundle("version").getString("BUILD");
 
-    
     public static final Logger logger = Logger.getLogger(Server.class.getName());
-        
-    
+
     private static Server instance;
 
-    
     static {
-        
+
         LogManager.getLogManager().reset();
         logger.setUseParentHandlers(false);
+
         logger.addHandler(new ConsoleHandler());
     }
-
 
     public static Server getInstance() {
         if (instance == null) {
@@ -72,16 +69,14 @@ public class Server extends Thread {
      * 1: Client-set username
      */
     //  <HashMap of ClientWorker thread and the Client's username
-    private final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap<>();
+//    private final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap<>();
     // (constant - connection unique) [UserID], [nickname]  User set (custom)
-    private final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap<>();
+//    private final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap<>();
 //    private static final List<ClientWorker> clientList = new ArrayList();
-
     private ClientManager clientManager;
-    
+
     private int maxClients;
 
-    
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private ServerSocket sockServ;
@@ -119,9 +114,11 @@ public class Server extends Thread {
 
     public synchronized void removeClient(String userID) {
         try {
+            log(userID + " disconnected.");
+            announce(userID + " disconnected.");
             clientManager.removeClient(userID);
         } catch (ItemNotFoundException ex) {
-            log(ex.getLocalizedMessage());
+            log("Exception removing client: " + ex.toString());
         }
     }
 
@@ -129,7 +126,7 @@ public class Server extends Thread {
         try {
             clientManager.modifyClientUsername(cw, username);
         } catch (ClientDuplicateException | ItemNotFoundException ex) {
-            log(ex.getLocalizedMessage());
+            log("Exception setting Client Username: " + ex.toString());
         }
     }
 
@@ -143,11 +140,7 @@ public class Server extends Thread {
         switch (packet.getIns()) {
             case Packet.MESSAGE:
                 for (ClientWorker cw : clientManager.getAllClients()) {
-                    try {
-                        cw.sendMessageToClient(new String(packet.getData(), Packet.CHARSET));
-                    } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    cw.sendPacketToClient(packet.getAddress(), Packet.MESSAGE, packet.getData());
                 }
                 break;
         }
@@ -171,7 +164,8 @@ public class Server extends Thread {
     /**
      * DO NOT RUN THIS METHOD DIRECTLY TO START THE SERVER Use listen(int port)
      * instead. Running this will cause an exception.
-     */@Override
+     */
+    @Override
     public void run() {
         if (this.port == 0) {
             try {
@@ -210,20 +204,22 @@ public class Server extends Thread {
                 }
                 log("Client connected with UID: " + UID);
             } catch (SocketTimeoutException e) {
-                doMaintanance();
+//                doMaintanance();
             } catch (IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
+
     private void doMaintanance() {
         counter++;
-        
+
         // ping every one second or so, I can do this better with a timer.. TODO: ADD SERVER TIMER :D
         if (counter % 12 == 0) {
             for (ClientWorker cw : clientManager.getAllClients()) {
-                cw.ping();
-//                println("Pinged " + cw.getClientID());
+                if (cw != null) {
+                    cw.ping();
+                }
             }
         }
     }

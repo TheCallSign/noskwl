@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 giddyc
+ * Copyright (C) 2015 Strawberry Studios
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,12 +17,19 @@
  */
 package net.strawberrystudios.noskwl.server;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import static java.lang.System.out;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.logging.ErrorManager;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
-
+import java.util.logging.Logger;
 /**
  *
  * @author giddyc
@@ -32,7 +39,52 @@ public class ConsoleHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         if (getFormatter() == null) {
-            setFormatter(new SimpleFormatter());
+            Formatter formatter = new Formatter() {
+                private final static String format = "[%1$s] %4$s: %5$s %n";
+                private final Date dat = new Date();
+                
+                @Override
+                public synchronized String format(LogRecord record) {
+//                    SimpleDateFormat sf = ;
+                    String formattedTime = "";
+                    try {
+                        out.println(dat);
+                        formattedTime = (new SimpleDateFormat("HH:mm")).parse(dat.getTime()+"").toString();
+                        
+                    } catch (ParseException ex) {
+                    }
+                    dat.setTime(record.getMillis());
+                    
+                    String source;
+                    if (record.getSourceClassName() != null) {
+                        source = record.getSourceClassName();
+                        if (record.getSourceMethodName() != null) {
+                            source += " " + record.getSourceMethodName();
+                        }
+                    } else {
+                        source = record.getLoggerName();
+                    }
+                    String message = formatMessage(record);
+                    String throwable = "";
+                    if (record.getThrown() != null) {
+                        StringWriter sw = new StringWriter();
+                        try (PrintWriter pw = new PrintWriter(sw)) {
+                            pw.println();
+                            record.getThrown().printStackTrace(pw);
+                        }
+                        throwable = sw.toString();
+                    }
+                    return String.format(format,
+                            formattedTime,
+                            source,
+                            record.getLoggerName(),
+                            record.getLevel(),
+                            message,
+                            throwable);
+                }
+            };
+
+            setFormatter(formatter);
         }
 
         try {

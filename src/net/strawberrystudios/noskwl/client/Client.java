@@ -151,7 +151,7 @@ public class Client implements Runnable {
         byte data[] = packet.getData();
         switch (command) {
             case Packet.MESSAGE:
-                println(packet.getAddress().split(":")[1] + ": " + new String(data, "UTF-8"));
+                println(packet.getAddress().split(":")[0] + ": " + new String(data, "UTF-8"));
                 println("ere?");
                 break;
             case Packet.UID:

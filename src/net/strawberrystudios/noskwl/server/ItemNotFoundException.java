@@ -21,7 +21,7 @@ package net.strawberrystudios.noskwl.server;
  *
  * @author St John
  */
-class ItemNotFoundException extends Exception {
+public class ItemNotFoundException extends Exception {
 
     public ItemNotFoundException() {
     }

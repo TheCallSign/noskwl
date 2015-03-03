@@ -18,10 +18,10 @@ import net.strawberrystudios.noskwl.packet.PacketFactory;
 
 /**
  * <p>
- * Codes for connectedness (in the instruction field then data in []): 
- * REQUEST-NAME // Server asks for client username and the client responds
- * with: NAME-[USERNAME] // Where USERNAME is the clients username 
- * MSG-[MESSAGE] a normal message to be pushed out to all clients
+ * Codes for connectedness (in the instruction field then data in []):
+ * REQUEST-NAME // Server asks for client username and the client responds with:
+ * NAME-[USERNAME] // Where USERNAME is the clients username MSG-[MESSAGE] a
+ * normal message to be pushed out to all clients
  * </p>
  *
  * @author St John Giddy
@@ -36,10 +36,11 @@ public class ClientWorker implements Runnable {
     private String userID;
 
     private int pingSeq = 0;
+
     public ClientWorker(Socket socket) throws IOException {
         this.sock = socket;
         setupStreams();
-        
+
 //        send
     }
 
@@ -54,6 +55,7 @@ public class ClientWorker implements Runnable {
     public String getClientID() {
         return userID;
     }
+
     public void setClientID(String clientID) {
         this.userID = clientID;
         pf.setUID(userID);
@@ -67,9 +69,9 @@ public class ClientWorker implements Runnable {
 
     }
 
-    private synchronized void pushToServer(Packet packet)  {
+    private synchronized void pushToServer(Packet packet) {
         Server.getInstance().parsePacket(packet);
-        
+
     }
 
     private void setupAuth() {
@@ -93,7 +95,8 @@ public class ClientWorker implements Runnable {
                 }
                 this.parsePacket(new ObjectPacket(rawPacket));
 
-            } catch (ClassNotFoundException | IOException c) {
+            } catch (ClassNotFoundException e) {
+            } catch (IOException c) {
                 break;
             }
         } while (true);
@@ -104,9 +107,9 @@ public class ClientWorker implements Runnable {
     }
 
     private void parsePacket(Packet packet) throws UnsupportedEncodingException {
-        if(!packet.getAddress().split(":", 2)[0].equals(this.userID)){
-            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: "+userID);
-            this.sendPacketToClient(Packet.UID, (userID+"").getBytes());
+        if (!packet.getAddress().split(":", 2)[0].equals(this.userID)) {
+            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: " + userID);
+            this.sendPacketToClient(Packet.UID, (userID + "").getBytes());
         }
         int command = packet.getIns();
         byte data[] = packet.getData();
@@ -125,34 +128,45 @@ public class ClientWorker implements Runnable {
 //                Server.getInstance().println("PONG!");
                 break;
             case Packet.GET_UID:
-                sendPacketToClient(Packet.UID, (userID+"").getBytes());
+                sendPacketToClient(Packet.UID, (userID + "").getBytes());
                 break;
             default:
-                System.out.println("Strange packet recived from " + this.userID + ": "+command);
+                System.out.println("Strange packet recived from " + this.userID + ": " + command);
         }
     }
 
     public void sendMessageToClient(String message) {
         this.sendPacketToClient(Packet.MESSAGE, message.getBytes());
     }
-    
+
     public void sendSystemMessageToClient(String message) {
         this.sendPacketToClient(Packet.SERVER_INFO, message.getBytes());
     }
-    
+
     public void sendPacketToClient(int ins, byte[] bytes) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:"+this.userID, ins, bytes));
+            output.writeObject(pf.getRawPacket("SERV:" + this.userID, ins, bytes));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
             //chatWindow.append("\n Sending failure");
         }
     }
-    
-    public void sendPongToClient(Packet p){
+
+    public void sendPacketToClient(String addr, int ins, byte[] bytes) {
+        String sourceAddr = addr.split(":")[0];
         try {
-            output.writeObject(pf.getRawPacket("SERV:"+this.userID, Packet.PONG, p.getData()));
+            output.writeObject(pf.getRawPacket(sourceAddr + ":" + this.userID, ins, bytes));
+            output.flush();
+            //showMessage("\n" + clientUsername + ": " + message);
+        } catch (IOException e) {
+            //chatWindow.append("\n Sending failure");
+        }
+    }
+
+    public void sendPongToClient(Packet p) {
+        try {
+            output.writeObject(pf.getRawPacket("SERV:" + this.userID, Packet.PONG, p.getData()));
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -172,15 +186,15 @@ public class ClientWorker implements Runnable {
 
     void setUsername(String defaultUsername) {
         this.clientUsername = defaultUsername;
-        sendSystemMessageToClient("Your username is now: "+defaultUsername);
+        sendSystemMessageToClient("Your username is now: " + defaultUsername);
     }
 
     private void showMessage(String str) {
-       System.out.println(str);
+        System.out.println(str);
     }
 
     void ping() {
-        sendPacketToClient(Packet.PING, (pingSeq+"").getBytes());
+        sendPacketToClient(Packet.PING, (pingSeq + "").getBytes());
         pingSeq++;
     }
 }
