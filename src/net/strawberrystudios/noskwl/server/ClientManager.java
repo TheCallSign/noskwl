@@ -17,12 +17,10 @@
  */
 package net.strawberrystudios.noskwl.server;
 
-import static java.lang.System.out;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import net.strawberrystudios.noskwl.packet.Packet;
 
 /**
  *
@@ -30,25 +28,30 @@ import java.util.Map;
  */
 public class ClientManager {
 
-    private final ClientWorker clientWorkerList[];
-    private final String clientUsernameList[];
-    private final String clientUUIDList[];
 
-    // false means empty, true means occupied.
-    private final boolean[] clientSlots;
+    /**
+     * <UUID, ClientWorker>
+     */
+    private final Map<String, ClientWorker> workerMap;
+    /**
+     * <UUID, Username>
+     */
+    private final Map<String, String> usernameMap;
 
-    private int head;
     private int size;
-    private int maxSize;
+    private final int maxSize;
     private int free;
 
     public ClientManager(int maxSize) {
-        this.maxSize =  maxSize;
-        clientSlots = new boolean[maxSize];
-        clientWorkerList = new ClientWorker[maxSize];
-        clientUsernameList = new String[maxSize];
-        clientUUIDList = new String[maxSize];
-        head = 0;
+        this.maxSize = maxSize;
+        workerMap = new HashMap<>();
+        usernameMap = new HashMap<>();
+    }
+
+    public ClientManager() {
+        this.maxSize = 0;
+        workerMap = new HashMap<>();
+        usernameMap = new HashMap<>();
     }
 
     public int getMaxSize() {
@@ -63,113 +66,67 @@ public class ClientManager {
         return size;
     }
 
-    public synchronized void addClient(ClientWorker cw, String clientUsername, String clientUUID) throws ClientDuplicateException {
-        if (Arrays.asList(clientUsernameList).contains(clientUsername)
-                || Arrays.asList(clientUsernameList).contains(clientUUID)) {
-            throw new ClientDuplicateException();
+
+    public synchronized void addClient(ClientWorker cw, String clientUsername, String clientUUID) throws ClientDuplicateException, ServerFullException {
+        if (!(size < maxSize && maxSize != 0)) {
+            throw new ServerFullException();
         }
-        refreshFreeSpace();
-        head = getFirstOpenSpace();
-        clientWorkerList[head] = cw;
-        clientUsernameList[head] = clientUsername;
-        clientUUIDList[head] = clientUUID;
+            if (workerMap.containsKey(clientUUID)) {
+                throw new ClientDuplicateException();
+            }
+        
+        workerMap.put(clientUUID, cw);
+        usernameMap.put(clientUUID, clientUsername);
         size++;
 
     }
 
-    public void modifyClientUsername(ClientWorker cw, String newClientUsername) throws ClientDuplicateException, ItemNotFoundException {
-        if (Arrays.asList(clientUsernameList).contains(newClientUsername)) {
+
+    public void modifyClientUsername(String uid, String newClientUsername) throws ClientDuplicateException, ItemNotFoundException {
+        if (usernameMap.containsValue(newClientUsername)) {
             throw new ClientDuplicateException();
         }
-        boolean itemFound = false;
-        for (int i = 0; i < maxSize; i++) {
-            if (clientWorkerList[i] == cw) {
-                clientUsernameList[i] = newClientUsername;
-                itemFound = true;
-            }
-        }
-        if (!itemFound) {
+        if (!usernameMap.containsKey(uid)) {
             throw new ItemNotFoundException();
         }
+        updateMap(uid, newClientUsername);
+        getWorker(uid).sendPacketToClient(Packet.CLIENT_USERNAME, newClientUsername.getBytes());
     }
 
-    public synchronized void removeClient(ClientWorker cw) throws ItemNotFoundException {
-        boolean itemFound = false;
-        for (int i = 0; i < maxSize; i++) {
-            if (clientWorkerList[i] == cw) {
-                removeClientByIndex(i);
-                itemFound = true;
-            }
-        }
-        if (!itemFound) {
+    public synchronized void removeClient(String uuid) throws ItemNotFoundException {
+        if (!usernameMap.containsKey(uuid)) {
             throw new ItemNotFoundException();
         }
+        removeFromMaps(uuid);
         size--;
     }
 
-    public synchronized void removeClient(String clientUUID) throws ItemNotFoundException {
-        boolean itemFound = false;
-        for (int i = 0; i < maxSize; i++) {
-            if (clientUUIDList[i].equals(clientUUID) && clientUUIDList[i] != null) {
-                removeClientByIndex(i);
-                itemFound = true;
-            }
-        }
-        if (!itemFound) {
+    public Collection<ClientWorker> getAllWorkers() {
+        return workerMap.values();
+    }
+
+    private void updateMap(String uuid, String username) {
+        usernameMap.put(uuid, username);
+    }
+
+    private void updateMap(String uuid, ClientWorker cw) {
+        workerMap.put(uuid, cw);
+    }
+
+    private void removeFromMaps(String uuid) {
+        usernameMap.remove(uuid);
+        workerMap.remove(uuid);
+    }
+
+
+    public ClientWorker getWorker(String uuid) throws ItemNotFoundException {
+        if (!workerMap.containsKey(uuid)) {
             throw new ItemNotFoundException();
         }
-        size--;
+        return workerMap.get(uuid);
     }
 
-    public String findClientUUID(ClientWorker cw) throws ItemNotFoundException {
-        for (int i = 0; i < maxSize; i++) {
-            if (clientWorkerList[i] == cw) {
-                return clientUUIDList[i];
-            }
-        }
-        throw new ItemNotFoundException();
-    }
-
-    public ClientWorker findClient(String clientUUID) throws ItemNotFoundException {
-        for (int i = 0; i < maxSize; i++) {
-            if (clientUUIDList[i].equals(clientUUID) && clientUUIDList[i] != null) {
-                return clientWorkerList[i];
-            }
-        }
-        throw new ItemNotFoundException();
-    }
-
-    private void removeClientByIndex(int index) {
-        clientWorkerList[index] = null;
-        clientUsernameList[index] = null;
-        clientUUIDList[index] = null;
-        clientSlots[index] = false;
-    }
-
-    private void refreshFreeSpace() {
-        this.free = maxSize;
-        for (int i = 0; i < maxSize; i++) {
-            if (clientWorkerList[i] != null) {
-                clientSlots[i] = true;
-                this.free--;
-            }
-        }
-    }
-
-    private int getFirstOpenSpace() {
-        for (int i = 0; i < maxSize; i++) {
-            System.out.println(clientSlots[i]);
-            
-            System.out.println("HERE???!!");
-            if (!clientSlots[i]) {
-                return i;
-            }
-        }
-        System.out.println("Here?"+maxSize);
-        return 0;
-    }
-
-    public ClientWorker[] getAllClients() {
-        return this.clientWorkerList;
+    public String getUsername(String uuid) {
+        return usernameMap.get(uuid);
     }
 }

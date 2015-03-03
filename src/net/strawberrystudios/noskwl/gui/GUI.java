@@ -231,7 +231,7 @@ public class GUI extends javax.swing.JFrame {
 //            conectionList.setModel(lm);
 //            
 //        }
-       
+
     }//GEN-LAST:event_menConnectActionPerformed
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed

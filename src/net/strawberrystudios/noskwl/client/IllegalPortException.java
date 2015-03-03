@@ -15,15 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.server;
+package net.strawberrystudios.noskwl.client;
 
 /**
  *
  * @author St John
  */
-public class ItemNotFoundException extends Exception {
+public class IllegalPortException extends Exception {
 
-    public ItemNotFoundException() {
+    public IllegalPortException() {
+        super();
+    }
+
+    public IllegalPortException(String str) {
+        super(str);
     }
     
 }
