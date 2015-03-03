@@ -49,7 +49,7 @@ public class Client implements Runnable {
     private PrintStream stdout;
 
     public Client(Writer writer) {
-        this.packetQueue = new ConcurrentLinkedQueue();
+        this.packetQueue = new ConcurrentLinkedQueue<>();
         textOut = writer;
         pf = new PacketFactory();
     }
@@ -86,7 +86,7 @@ public class Client implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            closeCrap();
+            closeSockets();
         }
     }
 
@@ -109,7 +109,9 @@ public class Client implements Runnable {
         output = new ObjectOutputStream(connection.getOutputStream());
         output.flush();
         input = new ObjectInputStream(connection.getInputStream());
-        println("Streams initialized");
+        while(!packetQueue.isEmpty()){
+            sendPacket(packetQueue.poll());
+        }
         synchronized (this) {
             this.notifyAll();
         }
@@ -122,7 +124,7 @@ public class Client implements Runnable {
                 if (this.uid == null) {
                     getUIDFromServer();
                 }
-                Object p = null;
+                Object p;
                 try {
                     p = input.readObject();
                 } catch (SocketTimeoutException ex) {
@@ -130,10 +132,9 @@ public class Client implements Runnable {
                 }
                 Object packet[] = null;
                 if (p instanceof Object[]) {
-//                    out.println(this.uid+":I GOTTA PACKET!");
                     packet = (Object[]) p;
                 } else if (p instanceof String) {
-                    System.out.println("GOT STRING PACKET WTF: " + (String) p + "FROM CLIENT UID" + this.getUsername());
+                    System.out.println("GOT STRING PACKET WTF: " + (String) p + " FROM CLIENT UID " + this.getUsername());
                     return;
                 }
                 parseMessage(new ObjectPacket(packet));
@@ -150,7 +151,8 @@ public class Client implements Runnable {
         byte data[] = packet.getData();
         switch (command) {
             case Packet.MESSAGE:
-                println(new String(data, "UTF-8"));
+                println(packet.getAddress().split(":")[1] + ": " + new String(data, "UTF-8"));
+                println("ere?");
                 break;
             case Packet.UID:
                 pf.setUID(uid);
@@ -162,39 +164,45 @@ public class Client implements Runnable {
                 break;
             case Packet.PING:
                 sendPacket(pf.getRawPacket(Packet.PONG, null));
+                break;
         }
         return null;
     }
 
     //close streams and sockets
-    private void closeCrap() {
+    private void closeSockets() {
         println("\nDisconnecting...");
         try {
             output.close();
             output.flush();
             input.close();
             connection.close();
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
         }
     }
 
     //send messages to server
     public synchronized void sendMessageToAll(String message) {
-        if (!message.equals("")) {
-            this.sendPacket(pf.getRawPacket(Packet.MESSAGE, message.getBytes()));
+        if (!message.trim().isEmpty()) {
+            this.sendPacket(pf.getRawPacket(Packet.MESSAGE, message.trim().getBytes()));
         }
 
     }
 
     public synchronized void sendPacket(Object p) {
-        try {
-            output.writeObject(p);
-            output.flush();
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NullPointerException ex) {
-            Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
-            println("Send packet failure, connection probably lost");
+        if (output != null) {
+            try {
+                output.writeObject(p);
+                output.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NullPointerException ex) {
+                Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
+                println("Send packet failure, connection probably lost");
+            }
+        } else {
+            println("HERE");
+            packetQueue.add(p);
         }
     }
 
@@ -209,8 +217,8 @@ public class Client implements Runnable {
 
             ((PrintStream) stdout).println(str + "\n");
 
-        } 
-        if(textOut != null){
+        }
+        if (textOut != null) {
             try {
                 textOut.append(str + "\n");
             } catch (IOException ex) {

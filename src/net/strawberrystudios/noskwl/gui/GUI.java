@@ -23,14 +23,14 @@ public class GUI extends javax.swing.JFrame {
     ListModel<String> lm;
     PacketFactory pf;
     int count = 0;
-    ArrayList<String> connections = new ArrayList();
+    ArrayList<String> connections = new ArrayList<>();
     String username;
 
     public GUI() {
         initComponents();
         setLocationRelativeTo(null);
         c = new Client(new TextAreaWriter(msgDisp));
-        lm = new DefaultListModel();
+        lm = (ListModel) new DefaultListModel();
         this.pf = new PacketFactory();
 //        username = (JOptionPane.showInputDialog(null,
 //                "Enter a username:", "User name",
