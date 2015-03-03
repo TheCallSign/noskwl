@@ -1,5 +1,6 @@
 package net.strawberrystudios.noskwl.gui;
 
+import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import static java.lang.System.out;
 import java.util.ArrayList;
@@ -225,14 +226,21 @@ public class GUI extends javax.swing.JFrame {
                 JOptionPane.CANCEL_OPTION), 7862);
         clientThread = new Thread(c);
         clientThread.start();
-        synchronized(c){
-            try {
-                c.wait(1000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                c.setUsername(username);
             }
-        }
-        c.setUsername(username);
+        });
+//        synchronized(c){
+//            try {
+//                c.wait(1000);
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
 //        c.updateUserlist();
 //        c.getUserlist();
 //        connections.add(c.getUsername());
@@ -264,6 +272,7 @@ public class GUI extends javax.swing.JFrame {
                 JOptionPane.CANCEL_OPTION));
         msgDisp.append("Welcome, " + username + "\n");
         setTitle(username + "'s chat");
+        c.setUsername(username);
     }//GEN-LAST:event_menUsernameActionPerformed
 
     private void msgFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_msgFieldKeyPressed

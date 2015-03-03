@@ -38,13 +38,11 @@ public class ClientWorker implements Runnable {
 
     private int pingSeq = 0;
 
-    private boolean clientManagerReady;
     private final ConcurrentLinkedQueue<Object> packetQueue;
 
     public ClientWorker(Socket socket) throws IOException {
 
         this.packetQueue = new ConcurrentLinkedQueue<>();
-        this.clientManagerReady = false;
         this.sock = socket;
         setupStreams();
 
@@ -83,25 +81,27 @@ public class ClientWorker implements Runnable {
 
     @Override
     public void run() {
-//        Server.getInstance().announce((clientUsername == null ? uuid:clientUsername));
-        Thread firstRunThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    synchronized (Server.getInstance().getClientManagerLock()) {
-                        Server.getInstance().getClientManagerLock().wait();
-                    }
-                    clientManagerReady = true;
-                    while (!packetQueue.isEmpty()) {
-                        parsePacket(new ObjectPacket(packetQueue.poll()));
-                    }
-                } catch (InterruptedException | UnsupportedEncodingException ex) {
-                    Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        firstRunThread.start();
+//        Server.getInstance().annou//<editor-fold defaultstate="collapsed" desc="ugh">
+//        nce((clientUsername == null ? uuid:clientUsername));
+//        Thread firstRunThread = new Thread(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                try {
+//                    synchronized (Server.getInstance().getClientManagerLock()) {
+//                        Server.getInstance().getClientManagerLock().wait();
+//                    }
+//                    clientManagerReady = true;
+//                    while (!packetQueue.isEmpty()) {
+//                        parsePacket(new ObjectPacket(packetQueue.poll()));
+//                    }
+//                } catch (InterruptedException | UnsupportedEncodingException ex) {
+//                    Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        });
+//        firstRunThread.start();
+//</editor-fold>
         Object rawPacket[] = null;
         do {
             try {
@@ -112,10 +112,10 @@ public class ClientWorker implements Runnable {
                     showMessage("Got a string packet lolwut?");
                     continue;
                 }
-                if (!clientManagerReady) {
-                    packetQueue.add(p);
-                    continue;
-                }
+//                if (!clientManagerReady) {
+//                    packetQueue.add(p);
+//                    continue;
+//                }
                 this.parsePacket(new ObjectPacket(rawPacket));
 
             } catch (ClassNotFoundException e) {

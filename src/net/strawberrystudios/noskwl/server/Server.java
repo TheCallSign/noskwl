@@ -157,15 +157,15 @@ public class Server extends Thread {
                 }
                 setClientWorkerUsername(uuid, clientUsername);
                 break;
-            case Packet.GET_USERLIST: {
-                try {
-                    clientManager.getWorker(uuid).sendPacketToClient(
-                            Packet.USERLIST, clientManager.getCSVUserlist().getBytes());
-                } catch (ItemNotFoundException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            break;
+//            case Packet.GET_USERLIST: {
+//                try {
+//                    clientManager.getWorker(uuid).sendPacketToClient(
+//                            Packet.USERLIST, clientManager.getCSVUserlist().getBytes());
+//                } catch (ItemNotFoundException ex) {
+//                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//            break;
         }
     }
 

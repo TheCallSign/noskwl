@@ -80,14 +80,14 @@ public class ClientManager {
         }
         workerMap.put(clientUUID, cw);
         if (clientUsername.isEmpty()) {
-            clientUsername = clientUUID;
+            clientUsername = clientUUID + "U";
         }
         usernameMap.put(clientUUID, clientUsername);
         cachedUsernameMap.put(clientUsername, clientUUID);
         size++;
-        synchronized(lock){
-            lock.notifyAll();
-        }
+//        synchronized(lock){
+//            lock.notifyAll();
+//        }
 
     }
 
@@ -110,7 +110,7 @@ public class ClientManager {
         size--;
     }
 
-    public Collection<ClientWorker> getAllWorkers() {
+    public synchronized Collection<ClientWorker> getAllWorkers() {
         return workerMap.values();
     }
 
@@ -127,24 +127,24 @@ public class ClientManager {
         workerMap.put(uuid, cw);
     }
 
-    private void removeFromMaps(String uuid) {
+    private  void removeFromMaps(String uuid) {
         cachedUsernameMap.remove(usernameMap.get(uuid));
         usernameMap.remove(uuid);
         workerMap.remove(uuid);
     }
 
-    public ClientWorker getWorker(String uuid) throws ItemNotFoundException {
+    public synchronized ClientWorker getWorker(String uuid) throws ItemNotFoundException {
         if (!workerMap.containsKey(uuid)) {
             throw new ItemNotFoundException();
         }
         return workerMap.get(uuid);
     }
 
-    public String getUsername(String uuid) {
+    public synchronized String getUsername(String uuid) {
         return usernameMap.get(uuid);
     }
 
-    public String getCSVUserlist() {
+    public synchronized String getCSVUserlist() {
         StringBuilder sb = new StringBuilder();
         for (String username : this.cachedUsernameMap.values()) {
             sb.append(username).append(",");
