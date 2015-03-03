@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 /**
  * Client messages are prefixed with a '1' (For messages in response to a
- * server) and visa versa
+ * server) 
  *
  * The address field specifies both the source and destination address in this
  * format- [SOURCE]:[DES]
@@ -42,7 +42,9 @@ public abstract class Packet {
     public static final int GET_USERLIST = 120;
     // DATA is the list of visble users connected
     public static final int USERLIST = 20;
-
+    
+    public static final int UPDATE_USERNAME =  21;
+    
     public static final int SEND_MESSAGE_TO_ROOM = 150;
     public static final int SEND_MESSAGE_TO_USER = 151;
     public static final int MESSAGE = 50;

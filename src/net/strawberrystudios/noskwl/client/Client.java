@@ -16,6 +16,9 @@ import static java.lang.System.out;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
@@ -34,6 +37,8 @@ public class Client implements Runnable {
     public static final String VERSION = "0.1.3";
     public static final Logger logger = Logger.getLogger(Client.class.getName());
 
+    
+    
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private String remoteIP;
@@ -48,6 +53,8 @@ public class Client implements Runnable {
     private final Queue packetQueue;
     private PrintStream stdout;
 
+    private List<String> userList;
+    
     public Client(Writer writer) {
         this.packetQueue = new ConcurrentLinkedQueue<>();
         textOut = writer;
@@ -119,6 +126,8 @@ public class Client implements Runnable {
 
     private void clientLoop() throws IOException {
 //        this.connection.setSoTimeout(1000);
+        
+                updateUserlist();
         do {
             try {
                 if (this.uid == null) {
@@ -129,7 +138,7 @@ public class Client implements Runnable {
                     p = input.readObject();
                 } catch (SocketTimeoutException ex) {
                     continue;
-                }
+                } catch(IOException e){continue;}
                 Object packet[] = null;
                 if (p instanceof Object[]) {
                     packet = (Object[]) p;
@@ -166,6 +175,9 @@ public class Client implements Runnable {
                 break;
             case Packet.SERVER_FULL:
                 println("Server full");
+                break;
+            case Packet.USERLIST:
+                this.userList  = getUsersFromString(new String(data, Packet.CHARSET));
         }
         return null;
     }
@@ -202,14 +214,22 @@ public class Client implements Runnable {
                 println("Send packet failure, connection probably lost");
             }
         } else {
-            println("HERE");
             packetQueue.add(p);
         }
     }
 
+    public synchronized List<String> getUserlist(){
+        return userList;
+    }
+    
     private synchronized void getUIDFromServer() {
         this.sendPacket(pf.getRawPacket("", Packet.GET_UID, null));
 
+    }
+    
+    public synchronized void updateUserlist(){
+        this.sendPacket(pf.getRawPacket(Packet.GET_USERLIST, null));
+        this.notifyAll();
     }
 
     private void println(String str) {
@@ -236,6 +256,10 @@ public class Client implements Runnable {
 
         }
         
+    }
+
+    private List<String> getUsersFromString(String string) {
+        return Arrays.asList(string.split(","));
     }
 
 }

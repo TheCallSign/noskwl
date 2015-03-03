@@ -3,6 +3,8 @@ package net.strawberrystudios.noskwl.gui;
 import java.awt.event.KeyEvent;
 import static java.lang.System.out;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
@@ -223,7 +225,16 @@ public class GUI extends javax.swing.JFrame {
                 JOptionPane.CANCEL_OPTION), 7862);
         clientThread = new Thread(c);
         clientThread.start();
+        synchronized(c){
+            try {
+                c.wait(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         c.setUsername(username);
+//        c.updateUserlist();
+//        c.getUserlist();
 //        connections.add(c.getUsername());
 //       
 //        for (String s : connections) {

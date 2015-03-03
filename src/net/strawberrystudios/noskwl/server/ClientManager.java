@@ -20,7 +20,9 @@ package net.strawberrystudios.noskwl.server;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import net.strawberrystudios.noskwl.packet.Packet;
+import sun.misc.ConditionLock;
 
 /**
  *
@@ -28,6 +30,7 @@ import net.strawberrystudios.noskwl.packet.Packet;
  */
 public class ClientManager {
 
+    public static final Object lock = new Object();
 
     /**
      * <UUID, ClientWorker>
@@ -37,60 +40,66 @@ public class ClientManager {
      * <UUID, Username>
      */
     private final Map<String, String> usernameMap;
+    /**
+     * <Username, UUID>
+     */
+    private final Map<String, String> cachedUsernameMap;
 
     private int size;
     private final int maxSize;
-    private int free;
 
     public ClientManager(int maxSize) {
         this.maxSize = maxSize;
         workerMap = new HashMap<>();
         usernameMap = new HashMap<>();
+        cachedUsernameMap = new HashMap<>();
     }
 
     public ClientManager() {
         this.maxSize = 0;
         workerMap = new HashMap<>();
         usernameMap = new HashMap<>();
+        cachedUsernameMap = new HashMap<>();
     }
 
     public int getMaxSize() {
         return maxSize;
     }
 
-    public int getFree() {
-        return free;
-    }
-
+    
     public int getSize() {
         return size;
     }
-
 
     public synchronized void addClient(ClientWorker cw, String clientUsername, String clientUUID) throws ClientDuplicateException, ServerFullException {
         if (!(size < maxSize && maxSize != 0)) {
             throw new ServerFullException();
         }
-            if (workerMap.containsKey(clientUUID)) {
-                throw new ClientDuplicateException();
-            }
-        
+        if (workerMap.containsKey(clientUUID)) {
+            throw new ClientDuplicateException();
+        }
         workerMap.put(clientUUID, cw);
+        if (clientUsername.isEmpty()) {
+            clientUsername = clientUUID;
+        }
         usernameMap.put(clientUUID, clientUsername);
+        cachedUsernameMap.put(clientUsername, clientUUID);
         size++;
+        synchronized(lock){
+            lock.notifyAll();
+        }
 
     }
-
 
     public void modifyClientUsername(String uid, String newClientUsername) throws ClientDuplicateException, ItemNotFoundException {
         if (usernameMap.containsValue(newClientUsername)) {
             throw new ClientDuplicateException();
         }
-        if (!usernameMap.containsKey(uid)) {
-            throw new ItemNotFoundException();
-        }
+
         updateMap(uid, newClientUsername);
+
         getWorker(uid).sendPacketToClient(Packet.CLIENT_USERNAME, newClientUsername.getBytes());
+        getWorker(uid).setClientUsername(newClientUsername);
     }
 
     public synchronized void removeClient(String uuid) throws ItemNotFoundException {
@@ -105,8 +114,13 @@ public class ClientManager {
         return workerMap.values();
     }
 
+    public String getUUIDFromUsername(String username) {
+        return cachedUsernameMap.get(username);
+    }
+
     private void updateMap(String uuid, String username) {
         usernameMap.put(uuid, username);
+        cachedUsernameMap.put(username, uuid);
     }
 
     private void updateMap(String uuid, ClientWorker cw) {
@@ -114,10 +128,10 @@ public class ClientManager {
     }
 
     private void removeFromMaps(String uuid) {
+        cachedUsernameMap.remove(usernameMap.get(uuid));
         usernameMap.remove(uuid);
         workerMap.remove(uuid);
     }
-
 
     public ClientWorker getWorker(String uuid) throws ItemNotFoundException {
         if (!workerMap.containsKey(uuid)) {
@@ -128,5 +142,13 @@ public class ClientManager {
 
     public String getUsername(String uuid) {
         return usernameMap.get(uuid);
+    }
+
+    public String getCSVUserlist() {
+        StringBuilder sb = new StringBuilder();
+        for (String username : this.cachedUsernameMap.values()) {
+            sb.append(username).append(",");
+        }
+        return sb.toString();
     }
 }

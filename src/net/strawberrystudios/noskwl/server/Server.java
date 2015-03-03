@@ -21,11 +21,13 @@ package net.strawberrystudios.noskwl.server;
  *
  * @author St John Giddy and Jamie Gregory @ Strawberry Studios (2015)
  */
+import com.sun.javafx.font.FontConstants;
 import java.io.*;
 import java.net.*;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -44,10 +46,10 @@ public class Server extends Thread {
 
     static {
 
-        LogManager.getLogManager().reset();
-        logger.setUseParentHandlers(false);
+//        LogManager.getLogManager().reset();
+//        logger.setUseParentHandlers(false);
 
-        logger.addHandler(new ConsoleHandler());
+//        logger.addHandler(new ConsoleHandler());
     }
 
     public static Server getInstance() {
@@ -68,7 +70,6 @@ public class Server extends Thread {
      * 1: Client-set username
      */
     //  <HashMap of ClientWorker thread and the Client's username
-
 //    private final ConcurrentHashMap<String, ClientWorker> clientMap = new ConcurrentHashMap<>();
     // (constant - connection unique) [UserID], [nickname]  User set (custom)
 //    private final ConcurrentHashMap<String, String> nicknameMap = new ConcurrentHashMap<>();
@@ -138,12 +139,33 @@ public class Server extends Thread {
      */
     public synchronized void parsePacket(Packet packet) {
 //        Server.getInstance().log("Got a packet!");
-        switch (packet.getIns()) {
+        String uuid = packet.getAddress().split(":")[0];
+        int command = packet.getIns();
+        byte data[] = packet.getData();
+        switch (command) {
             case Packet.MESSAGE:
                 for (ClientWorker cw : clientManager.getAllWorkers()) {
-                    cw.sendPacketToClient(packet.getAddress(), Packet.MESSAGE, packet.getData());
+                    cw.sendPacketToClient(clientManager.getUsername(uuid), Packet.MESSAGE, data);
                 }
                 break;
+            case Packet.SET_USERNAME:
+                String clientUsername = "";
+                try {
+                    clientUsername = new String(data, Packet.CHARSET);
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                setClientWorkerUsername(uuid, clientUsername);
+                break;
+            case Packet.GET_USERLIST: {
+                try {
+                    clientManager.getWorker(uuid).sendPacketToClient(
+                            Packet.USERLIST, clientManager.getCSVUserlist().getBytes());
+                } catch (ItemNotFoundException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            break;
         }
     }
 
@@ -197,16 +219,18 @@ public class Server extends Thread {
                 clientSock = sockServ.accept();
                 ClientWorker cw = new ClientWorker(clientSock);
                 cw.setClientID(UID);
-                executor.submit(cw);
                 try {
                     clientManager.addClient(cw, "", UID);
                 } catch (ClientDuplicateException ex) {
                     log(ex.getLocalizedMessage());
-
+                    continue;
                 } catch (ServerFullException ex) {
                     cw.sendPacketToClient(Packet.SERVER_FULL, null);
+                    continue;
                 }
+                executor.submit(cw);
                 log("Client connected with UID: " + UID);
+                announce(cw.getNickname()+" has joined the dark side.");
             } catch (SocketTimeoutException e) {
 //                doMaintanance();
             } catch (IOException ex) {
@@ -235,11 +259,11 @@ public class Server extends Thread {
             input.close();
             connection.close();
             executor.shutdownNow();
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
         }
     }
 
-    private void announce(String message) {
+    public void announce(String message) {
         for (ClientWorker cw : clientManager.getAllWorkers()) {
             cw.sendMessageToClient(message);
         }
@@ -252,6 +276,10 @@ public class Server extends Thread {
             logger.info(str);
 //            stdout.println(str);
         }
+    }
+    
+    public Object getClientManagerLock(){
+        return ClientManager.lock;
     }
 
 }

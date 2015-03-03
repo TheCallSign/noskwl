@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.packet.ObjectPacket;
@@ -37,7 +38,13 @@ public class ClientWorker implements Runnable {
 
     private int pingSeq = 0;
 
+    private boolean clientManagerReady;
+    private final ConcurrentLinkedQueue<Object> packetQueue;
+
     public ClientWorker(Socket socket) throws IOException {
+
+        this.packetQueue = new ConcurrentLinkedQueue<>();
+        this.clientManagerReady = false;
         this.sock = socket;
         setupStreams();
 
@@ -74,16 +81,27 @@ public class ClientWorker implements Runnable {
 
     }
 
-    private void setupAuth() {
-        try {
-            output.writeObject(pf.getRawPacket("", Packet.REQUEST_USERNAME, null));
-            output.flush();
-        } catch (IOException e) {
-        }
-    }
-
     @Override
     public void run() {
+//        Server.getInstance().announce((clientUsername == null ? uuid:clientUsername));
+        Thread firstRunThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    synchronized (Server.getInstance().getClientManagerLock()) {
+                        Server.getInstance().getClientManagerLock().wait();
+                    }
+                    clientManagerReady = true;
+                    while (!packetQueue.isEmpty()) {
+                        parsePacket(new ObjectPacket(packetQueue.poll()));
+                    }
+                } catch (InterruptedException | UnsupportedEncodingException ex) {
+                    Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        firstRunThread.start();
         Object rawPacket[] = null;
         do {
             try {
@@ -92,6 +110,11 @@ public class ClientWorker implements Runnable {
                     rawPacket = (Object[]) p;
                 } else if (p instanceof String) {
                     showMessage("Got a string packet lolwut?");
+                    continue;
+                }
+                if (!clientManagerReady) {
+                    packetQueue.add(p);
+                    continue;
                 }
                 this.parsePacket(new ObjectPacket(rawPacket));
 
@@ -119,7 +142,8 @@ public class ClientWorker implements Runnable {
                 break;
             case Packet.SET_USERNAME:
                 clientUsername = new String(data, Packet.CHARSET);
-                Server.getInstance().setClientWorkerUsername(this.uuid, clientUsername);
+                Server.getInstance().parsePacket(packet);
+//                Server.getInstance().setClientWorkerUsername(this.uuid, clientUsername);
                 break;
             case Packet.PING:
                 sendPongToClient(packet);
@@ -129,6 +153,9 @@ public class ClientWorker implements Runnable {
                 break;
             case Packet.GET_UID:
                 sendPacketToClient(Packet.UID, (uuid + "").getBytes());
+                break;
+            case Packet.GET_USERLIST:
+                pushToServer(packet);
                 break;
             default:
                 System.out.println("Strange packet recived from " + this.uuid + ": " + command);
@@ -180,7 +207,7 @@ public class ClientWorker implements Runnable {
             input.close();
             Server.getInstance().removeClient(uuid);
         } catch (IOException ex) {
-            Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(ClientWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
