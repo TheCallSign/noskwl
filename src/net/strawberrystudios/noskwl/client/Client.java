@@ -202,7 +202,6 @@ public class Client implements Runnable {
                 println("Send packet failure, connection probably lost");
             }
         } else {
-            println("HERE");
             packetQueue.add(p);
         }
     }
