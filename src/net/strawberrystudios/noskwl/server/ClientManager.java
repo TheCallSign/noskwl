@@ -17,8 +17,6 @@
  */
 package net.strawberrystudios.noskwl.server;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.Arrays;
