@@ -15,26 +15,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.tests;
-
-import static java.lang.System.out;
-import net.strawberrystudios.noskwl.packet.JSONPacket;
-import net.strawberrystudios.noskwl.packets.PacketBean;
-import net.strawberrystudios.noskwl.packets.MessagePacket;
-import org.json.JSONObject;
+package net.strawberrystudios.noskwl.packets;
 
 /**
  *
  * @author giddyc
  */
-public class UnitTest {
+public class PacketBean {
+    private int version = 1;
+    protected String value;
+    protected String type;
 
-    public static void main(String[] args) {
-
-        PacketBean data = new MessagePacket();
-        data.setValue("HAIII");
-        JSONObject packet = new JSONObject(data);
-        
-        out.println(packet.toString(1));
+    public String getType() {
+        return type;
     }
+    
+    public int getVersion() {
+        return version;
+    }
+    
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
 }

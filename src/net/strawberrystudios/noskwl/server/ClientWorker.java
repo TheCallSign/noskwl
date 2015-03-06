@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.packet.ObjectPacket;
 import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.PacketFactory;
+import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
 
 /**
  * <p>
@@ -32,7 +32,7 @@ public class ClientWorker implements Runnable {
     private ObjectInputStream input;
     private final Socket sock;
     private String clientUsername;
-    private final PacketFactory pf = new PacketFactory();
+    private final ObjectPacketFactory pf = new ObjectPacketFactory();
     private String uuid;
 
     private int pingSeq = 0;

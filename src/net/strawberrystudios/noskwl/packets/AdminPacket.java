@@ -15,26 +15,36 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.tests;
-
-import static java.lang.System.out;
-import net.strawberrystudios.noskwl.packet.JSONPacket;
-import net.strawberrystudios.noskwl.packets.PacketBean;
-import net.strawberrystudios.noskwl.packets.MessagePacket;
-import org.json.JSONObject;
+package net.strawberrystudios.noskwl.packets;
 
 /**
  *
  * @author giddyc
  */
-public class UnitTest {
+public class AdminPacket extends PacketBean {
+    /**
+     * Change_Username
+     * Request_Username
+     */
+    String instruction;
+    /**
+     * If true, client has to comply or server will ignore client
+     */
+    boolean isForced;
 
-    public static void main(String[] args) {
+    public boolean isIsForced() {
+        return isForced;
+    }
 
-        PacketBean data = new MessagePacket();
-        data.setValue("HAIII");
-        JSONObject packet = new JSONObject(data);
-        
-        out.println(packet.toString(1));
+    public void setIsForced(boolean isForced) {
+        this.isForced = isForced;
+    }
+
+    public String getType() {
+        return instruction;
+    }
+
+    public void setType(String type) {
+        this.instruction = type;
     }
 }

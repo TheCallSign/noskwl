@@ -22,7 +22,6 @@ import java.io.StringWriter;
 import static java.lang.System.out;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;

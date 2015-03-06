@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.server.ClientWorker;
 import net.strawberrystudios.noskwl.packet.ObjectPacket;
 import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.PacketFactory;
+import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
 
 /**
  *
@@ -43,7 +43,7 @@ public class Client implements Runnable {
     private String uid;
 
     private final Writer textOut;
-    private final PacketFactory pf;
+    private final ObjectPacketFactory pf;
 
     private final Queue packetQueue;
     private PrintStream stdout;
@@ -51,10 +51,10 @@ public class Client implements Runnable {
     public Client(Writer writer) {
         this.packetQueue = new ConcurrentLinkedQueue<>();
         textOut = writer;
-        pf = new PacketFactory();
+        pf = new ObjectPacketFactory();
     }
 
-    public PacketFactory getPacketFactory() {
+    public ObjectPacketFactory getPacketFactory() {
         return pf;
     }
 

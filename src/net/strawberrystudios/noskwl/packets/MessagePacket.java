@@ -15,26 +15,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.tests;
+package net.strawberrystudios.noskwl.packets;
 
-import static java.lang.System.out;
-import net.strawberrystudios.noskwl.packet.JSONPacket;
-import net.strawberrystudios.noskwl.packets.PacketBean;
-import net.strawberrystudios.noskwl.packets.MessagePacket;
-import org.json.JSONObject;
+import java.util.List;
 
 /**
  *
  * @author giddyc
  */
-public class UnitTest {
+public class MessagePacket extends PacketBean{
+    private List<String> usernames;
 
-    public static void main(String[] args) {
+    public MessagePacket() {
+        super.type = "message";
+    }
+    
+    public List<String> getUsernames() {
+        return usernames;
+    }
 
-        PacketBean data = new MessagePacket();
-        data.setValue("HAIII");
-        JSONObject packet = new JSONObject(data);
-        
-        out.println(packet.toString(1));
+    public void setUsernames(List<String> usernames) {
+        this.usernames = usernames;
     }
 }

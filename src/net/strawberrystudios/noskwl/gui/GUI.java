@@ -9,7 +9,7 @@ import javax.swing.ListModel;
 import net.strawberrystudios.noskwl.TextAreaWriter;
 import net.strawberrystudios.noskwl.client.Client;
 import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.PacketFactory;
+import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
 
 //10.52.161.110
 /**
@@ -21,7 +21,7 @@ public class GUI extends javax.swing.JFrame {
     Client c;
     Thread clientThread;
     ListModel<String> lm;
-    PacketFactory pf;
+    ObjectPacketFactory pf;
     int count = 0;
     ArrayList<String> connections = new ArrayList<>();
     String username;
@@ -31,7 +31,7 @@ public class GUI extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         c = new Client(new TextAreaWriter(msgDisp));
         lm = (ListModel) new DefaultListModel();
-        this.pf = new PacketFactory();
+        this.pf = new ObjectPacketFactory();
 //        username = (JOptionPane.showInputDialog(null,
 //                "Enter a username:", "User name",
 //                JOptionPane.CANCEL_OPTION));

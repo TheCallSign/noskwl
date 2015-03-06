@@ -17,24 +17,36 @@
  */
 package net.strawberrystudios.noskwl.packet;
 
+import org.json.JSONObject;
+
 /**
  *
  * @author giddyc
  */
-public abstract class PacketFactory {
-     protected String uuid;
+public class JSONPacket extends Packet{
+
+    JSONObject packet;
     
-    public PacketFactory(){
-        this.uuid = "";
-         
-    }    
-    
-    public PacketFactory(String address){
-        this.uuid = address;
+    public JSONPacket(Object rawPacket) {
+        super(rawPacket);
+        if(rawPacket instanceof String){
+            packet = new JSONObject((String) rawPacket);
+        }
     }
     
-    public void setUID(String address) {
-        this.uuid = address;
+    @Override
+    public int getIns() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public String getAddress() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public byte[] getData() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }
