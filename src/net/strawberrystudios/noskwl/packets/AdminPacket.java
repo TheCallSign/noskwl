@@ -22,11 +22,15 @@ package net.strawberrystudios.noskwl.packets;
  * @author giddyc
  */
 public class AdminPacket extends PacketBean {
+
+    public AdminPacket() {
+        super("admin");
+    }
     /**
      * Change_Username
      * Request_Username
      */
-    String instruction;
+    private String instruction;
     /**
      * If true, client has to comply or server will ignore client
      */
@@ -40,11 +44,4 @@ public class AdminPacket extends PacketBean {
         this.isForced = isForced;
     }
 
-    public String getType() {
-        return instruction;
-    }
-
-    public void setType(String type) {
-        this.instruction = type;
-    }
 }

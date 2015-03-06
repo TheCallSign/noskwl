@@ -31,6 +31,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.client.IllegalPortException;
 import net.strawberrystudios.noskwl.packet.Packet;
+import net.strawberrystudios.noskwl.packets.PacketBean;
 
 public class Server extends Thread {
 
@@ -136,12 +137,12 @@ public class Server extends Thread {
      *
      * @param packet
      */
-    public synchronized void parsePacket(Packet packet) {
+    public synchronized void parsePacket(PacketBean packet) {
 //        Server.getInstance().log("Got a packet!");
-        switch (packet.getIns()) {
-            case Packet.MESSAGE:
+        switch (packet.getType()) {
+            case "message":
                 for (ClientWorker cw : clientManager.getAllWorkers()) {
-                    cw.sendPacketToClient(packet.getAddress(), Packet.MESSAGE, packet.getData());
+                    cw.sendPacketToClient(packet));
                 }
                 break;
         }

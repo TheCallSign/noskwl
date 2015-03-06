@@ -22,10 +22,14 @@ package net.strawberrystudios.noskwl.packets;
  * @author giddyc
  */
 public class PacketBean {
-    private int version = 1;
+    private final int version = 1;
     protected String value;
     protected String type;
 
+    protected PacketBean(String type){
+        this.type = type;
+    }
+    
     public String getType() {
         return type;
     }

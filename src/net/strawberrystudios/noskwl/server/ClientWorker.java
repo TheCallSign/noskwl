@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.packet.ObjectPacket;
 import net.strawberrystudios.noskwl.packet.Packet;
 import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
+import net.strawberrystudios.noskwl.packets.PacketBean;
 
 /**
  * <p>
@@ -69,7 +70,7 @@ public class ClientWorker implements Runnable {
 
     }
 
-    private synchronized void pushToServer(Packet packet) {
+    private synchronized void pushToServer(PacketBean packet) {
         Server.getInstance().parsePacket(packet);
 
     }
@@ -106,14 +107,11 @@ public class ClientWorker implements Runnable {
 
     }
 
-    private void parsePacket(Packet packet) throws UnsupportedEncodingException {
-        if (!packet.getAddress().split(":", 2)[0].equals(this.uuid)) {
-            this.sendSystemMessageToClient("UID OUT OF SYNC, SENDING YOUR UID: " + uuid);
-            this.sendPacketToClient(Packet.UID, (uuid + "").getBytes());
-        }
-        int command = packet.getIns();
-        byte data[] = packet.getData();
-        switch (command) {
+    private void parsePacket(PacketBean packet) throws UnsupportedEncodingException {
+        
+        
+        String value = packet.getValue();
+        switch (packet.getType()) {
             case Packet.MESSAGE:
                 pushToServer(packet);
                 break;

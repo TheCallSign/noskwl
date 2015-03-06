@@ -27,7 +27,7 @@ public class MessagePacket extends PacketBean{
     private List<String> usernames;
 
     public MessagePacket() {
-        super.type = "message";
+        super("message");
     }
     
     public List<String> getUsernames() {
