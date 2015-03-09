@@ -8,8 +8,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import net.strawberrystudios.noskwl.TextAreaWriter;
 import net.strawberrystudios.noskwl.client.Client;
-import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
+import net.strawberrystudios.noskwl.old.packet.Packet;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacketFactory;
 
 //10.52.161.110
 /**

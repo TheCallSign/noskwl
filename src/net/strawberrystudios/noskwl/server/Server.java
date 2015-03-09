@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.client.IllegalPortException;
-import net.strawberrystudios.noskwl.packet.Packet;
+import net.strawberrystudios.noskwl.old.packet.Packet;
 import net.strawberrystudios.noskwl.packets.PacketBean;
 
 public class Server extends Thread {
@@ -142,7 +142,7 @@ public class Server extends Thread {
         switch (packet.getType()) {
             case "message":
                 for (ClientWorker cw : clientManager.getAllWorkers()) {
-                    cw.sendPacketToClient(packet));
+                    cw.sendPacketToClient(packet);
                 }
                 break;
         }

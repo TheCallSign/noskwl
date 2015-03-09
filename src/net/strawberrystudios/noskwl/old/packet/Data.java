@@ -15,33 +15,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.packets;
+package net.strawberrystudios.noskwl.old.packet;
+
+import java.lang.reflect.Type;
+
 
 /**
  *
  * @author giddyc
  */
-public class AdminPacket extends PacketBean {
+public class Data<T> {
 
-    public AdminPacket() {
-        super("admin");
+    private final Type type;
+    private final T data;
+    public Data(Type t, T data){
+        this.type = t;
+        this.data = data;
     }
-    /**
-     * Change_Username
-     * Request_Username
-     */
-    private String instruction;
-    /**
-     * If true, client has to comply or server will ignore client
-     */
-    boolean isForced;
-
-    public boolean isIsForced() {
-        return isForced;
+    
+    public T getData(){
+        return data;
     }
-
-    public void setIsForced(boolean isForced) {
-        this.isForced = isForced;
+    
+    public Type getType(){
+        return this.type;
     }
-
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.strawberrystudios.noskwl.packet;
+package net.strawberrystudios.noskwl.old.packet;
 
 import java.util.Arrays;
 

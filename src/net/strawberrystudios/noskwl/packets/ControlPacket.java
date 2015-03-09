@@ -15,26 +15,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.packet;
+package net.strawberrystudios.noskwl.packets;
 
 /**
  *
  * @author giddyc
  */
-public abstract class PacketFactory {
-     protected String uuid;
-    
-    public PacketFactory(){
-        this.uuid = "";
-         
-    }    
-    
-    public PacketFactory(String address){
-        this.uuid = address;
+public class ControlPacket extends PacketBean {
+
+    public ControlPacket() {
+        super(PacketBean.Type.CONTROL);
     }
-    
-    public void setUID(String address) {
-        this.uuid = address;
+    /**
+     * Change_Username
+     * Request_Username
+     */
+    private String instruction;
+    /**
+     * If true, client has to comply or server will ignore client
+     */
+    boolean isForced;
+
+    public boolean isIsForced() {
+        return isForced;
+    }
+
+    public void setIsForced(boolean isForced) {
+        this.isForced = isForced;
     }
 
 }

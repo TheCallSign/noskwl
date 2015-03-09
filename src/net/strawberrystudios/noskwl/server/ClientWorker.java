@@ -12,10 +12,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.strawberrystudios.noskwl.packet.ObjectPacket;
-import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacket;
+import net.strawberrystudios.noskwl.old.packet.Packet;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacketFactory;
 import net.strawberrystudios.noskwl.packets.PacketBean;
+import org.json.JSONObject;
 
 /**
  * <p>
@@ -88,13 +89,9 @@ public class ClientWorker implements Runnable {
         Object rawPacket[] = null;
         do {
             try {
-                Object p = input.readObject();
-                if (p instanceof Object[]) {
-                    rawPacket = (Object[]) p;
-                } else if (p instanceof String) {
-                    showMessage("Got a string packet lolwut?");
-                }
-                this.parsePacket(new ObjectPacket(rawPacket));
+                JSONObject p = input.readUTF();
+               
+                this.parsePacket(p);
 
             } catch (ClassNotFoundException e) {
             } catch (IOException c) {
@@ -111,39 +108,22 @@ public class ClientWorker implements Runnable {
         
         
         String value = packet.getValue();
+        
         switch (packet.getType()) {
-            case Packet.MESSAGE:
+            case MESSAGE:
                 pushToServer(packet);
                 break;
-            case Packet.SET_USERNAME:
-                clientUsername = new String(data, Packet.CHARSET);
-                Server.getInstance().setClientWorkerUsername(this.uuid, clientUsername);
-                break;
-            case Packet.PING:
-                sendPongToClient(packet);
-                break;
-            case Packet.PONG:
-//                Server.getInstance().println("PONG!");
-                break;
-            case Packet.GET_UID:
-                sendPacketToClient(Packet.UID, (uuid + "").getBytes());
-                break;
-            default:
-                System.out.println("Strange packet recived from " + this.uuid + ": " + command);
+            case CONTROL:
+                parseControlPacket(packet);
+                
         }
     }
 
-    public void sendMessageToClient(String message) {
-        this.sendPacketToClient(Packet.MESSAGE, message.getBytes());
-    }
-
-    public void sendSystemMessageToClient(String message) {
-        this.sendPacketToClient(Packet.SERVER_INFO, message.getBytes());
-    }
-
-    public void sendPacketToClient(int ins, byte[] bytes) {
+    
+    public void sendPacketToClient(PacketBean packet) {
         try {
-            output.writeObject(pf.getRawPacket("SERV:" + this.uuid, ins, bytes));
+            JSONObject object = new JSONObject(packet);
+            output.writeUTF(object.toString());
             output.flush();
             //showMessage("\n" + clientUsername + ": " + message);
         } catch (IOException e) {
@@ -194,5 +174,9 @@ public class ClientWorker implements Runnable {
     void ping() {
         sendPacketToClient(Packet.PING, (pingSeq + "").getBytes());
         pingSeq++;
+    }
+
+    private void parseControlPacket(PacketBean packet) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

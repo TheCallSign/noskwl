@@ -20,7 +20,7 @@ package net.strawberrystudios.noskwl.server;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import net.strawberrystudios.noskwl.packet.Packet;
+import net.strawberrystudios.noskwl.old.packet.Packet;
 
 /**
  *

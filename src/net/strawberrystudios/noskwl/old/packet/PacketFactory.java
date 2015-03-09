@@ -15,29 +15,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.strawberrystudios.noskwl.packet;
-
-import java.lang.reflect.Type;
-
+package net.strawberrystudios.noskwl.old.packet;
 
 /**
  *
  * @author giddyc
  */
-public class Data<T> {
+public abstract class PacketFactory {
+     protected String uuid;
+    
+    public PacketFactory(){
+        this.uuid = "";
+         
+    }    
+    
+    public PacketFactory(String address){
+        this.uuid = address;
+    }
+    
+    public void setUID(String address) {
+        this.uuid = address;
+    }
 
-    private final Type type;
-    private final T data;
-    public Data(Type t, T data){
-        this.type = t;
-        this.data = data;
-    }
-    
-    public T getData(){
-        return data;
-    }
-    
-    public Type getType(){
-        return this.type;
-    }
 }

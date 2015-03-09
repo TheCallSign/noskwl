@@ -21,16 +21,28 @@ package net.strawberrystudios.noskwl.packets;
  *
  * @author giddyc
  */
-public class PacketBean {
+public abstract class PacketBean {
+    
+    public enum Type {
+        MESSAGE(),
+        CONTROL();
+//        Type holder;
+//        private Type(Type t) {
+//            holder = t;
+//        }
+        
+    }
+    
+    
     private final int version = 1;
     protected String value;
-    protected String type;
+    protected Type type;
 
-    protected PacketBean(String type){
+    protected PacketBean(Type type){
         this.type = type;
     }
     
-    public String getType() {
+    public Type getType() {
         return type;
     }
     

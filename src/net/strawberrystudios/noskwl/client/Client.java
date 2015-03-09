@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.server.ClientWorker;
-import net.strawberrystudios.noskwl.packet.ObjectPacket;
-import net.strawberrystudios.noskwl.packet.Packet;
-import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacket;
+import net.strawberrystudios.noskwl.old.packet.Packet;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacketFactory;
 
 /**
  *

@@ -18,7 +18,7 @@
 package net.strawberrystudios.noskwl.tests;
 
 import static java.lang.System.out;
-import net.strawberrystudios.noskwl.packet.JSONPacket;
+import net.strawberrystudios.noskwl.old.packet.JSONPacket;
 import net.strawberrystudios.noskwl.packets.PacketBean;
 import net.strawberrystudios.noskwl.packets.MessagePacket;
 import org.json.JSONObject;
@@ -34,7 +34,7 @@ public class UnitTest {
         PacketBean data = new MessagePacket();
         data.setValue("HAIII");
         JSONObject packet = new JSONObject(data);
-        
         out.println(packet.toString(1));
+        
     }
 }

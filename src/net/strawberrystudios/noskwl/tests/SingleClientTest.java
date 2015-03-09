@@ -14,9 +14,9 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.strawberrystudios.noskwl.client.Client;
-import net.strawberrystudios.noskwl.packet.Packet;
-import static net.strawberrystudios.noskwl.packet.Packet.MESSAGE;
-import net.strawberrystudios.noskwl.packet.ObjectPacketFactory;
+import net.strawberrystudios.noskwl.old.packet.Packet;
+import static net.strawberrystudios.noskwl.old.packet.Packet.MESSAGE;
+import net.strawberrystudios.noskwl.old.packet.ObjectPacketFactory;
 import net.strawberrystudios.noskwl.server.Server;
 
 /**
